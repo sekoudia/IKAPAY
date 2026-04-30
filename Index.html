@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IKAPAY - Trésor National</title>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+
+    <style>
+        :root { --main: #1db954; --bg: #0b0b0b; --card: #1a1a1a; --gold: #fcd116; --text: #ffffff; --red: #ff4444; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; }
+        .card { background: var(--card); border-radius: 24px; padding: 20px; margin-bottom: 15px; border: 1px solid #333; position: relative; }
+        
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; background: #252525; padding: 5px; border-radius: 15px; }
+        .tab { flex: 1; text-align: center; padding: 10px; border-radius: 12px; cursor: pointer; color: #888; font-weight: bold; }
+        .tab.active { background: var(--main); color: white; }
+
+        input, select { width: 100%; padding: 14px; margin: 8px 0; border-radius: 12px; border: 1px solid #333; background: #252525; color: white; box-sizing: border-box; font-size: 16px; }
+        
+        button { width: 100%; padding: 15px; border-radius: 30px; border: none; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; }
+        .btn-main { background: var(--main); color: white; }
+        .btn-gold { background: var(--gold); color: black; }
+        
+        .solde-val { font-size: 42px; font-weight: 800; color: var(--main); text-align: center; margin: 10px 0; cursor: pointer; }
+        .income-badge { background: rgba(252, 209, 22, 0.1); color: var(--gold); padding: 10px; border-radius: 15px; border: 1px dashed var(--gold); margin: 10px 0; font-size: 14px; text-align: center; }
+        
+        .hidden { display: none !important; }
+        .tx-item { padding: 12px; border-bottom: 1px solid #282828; display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
+        #reader { width: 100%; border-radius: 15px; overflow: hidden; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <div id="auth-box" class="card">
+        <h2 style="text-align:center">🟢 IKAPAY</h2>
+        <div class="tabs">
+            <div id="tab-login" class="tab active" onclick="switchMode('login')">Connexion</div>
+            <div id="tab-signup" class="tab" onclick="switchMode('signup')">Inscription</div>
+        </div>
+        <input type="tel" id="auth-phone" value="+223">
+        <div id="signup-extra" class="hidden">
+            <input type="text" id="auth-name" placeholder="Nom ou Boutique">
+            <select id="auth-role">
+                <option value="user">Client Simple</option>
+                <option value="agent">Agent de Retrait</option>
+            </select>
+        </div>
+        <input type="password" id="auth-pin" placeholder="Code Secret">
+        <button class="btn-main" onclick="handleAuth()">Ouvrir IkaPay</button>
+    </div>
+
+    <div id="app-box" class="hidden">
+        
+        <div id="admin-dashboard" class="card hidden" style="border: 1px solid var(--gold);">
+            <div style="color:var(--gold); font-weight:bold; text-align:center">👑 TRÉSORIER ADMIN</div>
+            
+            <div class="income-badge">
+                💰 BÉNÉFICES IKAPAY : <br>
+                <span id="admin-revenue" style="font-size:22px; font-weight:900;">0</span> CFA
+            </div>
+
+            <input type="tel" id="mint-to" placeholder="Numéro client">
+            <input type="number" id="mint-amt" placeholder="Montant CFA à créer">
+            <button class="btn-gold" onclick="adminMint()">Émettre Monnaie (CFA)</button>
+        </div>
+
+        <div id="agent-dashboard" class="card hidden" style="border: 1px solid var(--main);">
+            <h3 style="color:var(--main); margin-top:0;">🏪 ESPACE AGENT</h3>
+            <div style="background:#252525; padding:10px; border-radius:12px; font-size:13px;">
+                Mes Commissions : <b id="agent-comm" style="color:var(--gold)">0 CFA</b>
+            </div>
+            <div id="reader"></div>
+            <button class="btn-main" onclick="startScanner()" style="margin-top:10px;">📷 Scanner Client</button>
+        </div>
+
+        <div class="card" style="text-align:center">
+            <div id="user-name" style="font-size:14px; opacity:0.8; font-weight: bold;">...</div>
+            <div class="solde-val" onclick="toggleMoney()"><span id="txt-solde">••••••</span> <small style="font-size:15px">CFA</small></div>
+            
+            <div style="font-size:12px; color:gray;">
+                Bonus Hebdo : <b id="count-tx" style="color:var(--main)">0</b>/3 transactions
+            </div>
+
+            <div id="qrcode-box" style="background:white; padding:10px; display:inline-block; border-radius:15px; margin-top:15px;"></div>
+        </div>
+
+        <div class="card">
+            <h3>💸 Transactions</h3>
+            <input type="tel" id="to-phone" placeholder="Numéro">
+            <input type="number" id="to-amt" placeholder="Montant CFA">
+            <div style="display:flex; gap:10px;">
+                <button class="btn-main" onclick="doTx('transfer')" style="flex:1">Envoyer</button>
+                <button class="btn-gold" onclick="doTx('withdraw')" style="flex:1">Retrait</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>📜 Historique</h3>
+            <div id="history-list"></div>
+        </div>
+
+        <button onclick="location.reload()" style="background:none; color:gray; font-size:12px; width:100%; cursor: pointer;">Déconnexion</button>
+    </div>
+
+<script>
+// CONFIG
+const firebaseConfig = {
+  apiKey: "AIzaSyAzhSslKnrPOsgmxtR8OTqv__QCR-5geSU",
+  authDomain: "malicoin.firebaseapp.com",
+  databaseURL: "https://malicoin-default-rtdb.firebaseio.com",
+  projectId: "malicoin",
+  storageBucket: "malicoin.firebasestorage.app",
+  messagingSenderId: "728024400418",
+  appId: "1:728024400418:web:45616567fc3aa9e02a007b"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// --- LA LISTE DES NUMÉROS DE TEST CORRIGÉE ---
+const MY_ADMIN = "+22396804164";
+const TEST_CODES = {
+    "+22396804164": "Davis2006",
+    "+22377597001": "888888",
+    "+22376022912": "760229",
+    "+22376831895": "768318"
+};
+
+let currUser = "";
+let currData = {};
+let isHidden = true;
+
+function switchMode(m) {
+    document.getElementById('tab-login').classList.toggle('active', m==='login');
+    document.getElementById('tab-signup').classList.toggle('active', m==='signup');
+    document.getElementById('signup-extra').classList.toggle('hidden', m==='login');
+}
+
+function handleAuth() {
+    const p = document.getElementById('auth-phone').value.trim();
+    const pin = document.getElementById('auth-pin').value.trim();
+    
+    db.ref('users/'+p).once('value', snap => {
+        const d = snap.val();
+        
+        if(document.getElementById('signup-extra').classList.contains('hidden')) {
+            // Vérification dans TEST_CODES d'abord, puis Database
+            if(TEST_CODES[p] && TEST_CODES[p] === pin) {
+                launch(p);
+            } else if(d && d.pin === pin) {
+                launch(p);
+            } else {
+                alert("Identifiants incorrects");
+            }
+        } else {
+            // Logique d'inscription
+            if(d) return alert("Numéro déjà inscrit");
+            const name = document.getElementById('auth-name').value;
+            const role = document.getElementById('auth-role').value;
+            db.ref('users/'+p).set({
+                nom: name,
+                pin: pin,
+                role: role,
+                solde: 0, commissions: 0, lastBonus: 0
+            }).then(() => launch(p));
+        }
+    });
+}
+
+function launch(p) {
+    currUser = p;
+    document.getElementById('auth-box').classList.add('hidden');
+    document.getElementById('app-box').classList.remove('hidden');
+
+    if(p === MY_ADMIN) {
+        document.getElementById('admin-dashboard').classList.remove('hidden');
+        db.ref('admin_gains').on('value', s => {
+            document.getElementById('admin-revenue').innerText = (s.val() || 0).toLocaleString();
+        });
+    }
+
+    db.ref('users/'+p).on('value', snap => {
+        currData = snap.val() || {nom: "Utilisateur Test", role:"user", solde:0};
+        document.getElementById('user-name').innerText = currData.nom;
+        
+        // Les numéros de test sont souvent des agents
+        if(currData.role === 'agent' || p === "+22377597001") {
+            document.getElementById('agent-dashboard').classList.remove('hidden');
+            document.getElementById('agent-comm').innerText = (currData.commissions || 0).toLocaleString() + " CFA";
+        }
+        refreshUI();
+    });
+
+    document.getElementById('qrcode-box').innerHTML = "";
+    new QRCode(document.getElementById('qrcode-box'), {text: p, width: 120, height: 120});
+    loadHistory();
+}
+
+function refreshUI() {
+    document.getElementById('txt-solde').innerText = isHidden ? "••••••" : (currData.solde/10).toLocaleString();
+    
+    const week = Date.now() - (7*24*60*60*1000);
+    db.ref('history').orderByChild('from').equalTo(currUser).once('value', snap => {
+        let count = 0;
+        snap.forEach(t => { if(t.val().date > week) count++; });
+        document.getElementById('count-tx').innerText = count;
+        
+        const now = new Date();
+        if(now.getDay() === 6 && now.getHours() >= 20 && count >= 3 && (currData.lastBonus||0) < week) {
+            db.ref('users/'+currUser+'/solde').transaction(s => (s||0) + 20000);
+            db.ref('users/'+currUser+'/lastBonus').set(Date.now());
+            alert("🎊 FÉLICITATIONS ! Bonus de 2000 CFA versé !");
+        }
+    });
+}
+
+function toggleMoney() { isHidden = !isHidden; refreshUI(); }
+
+function adminMint() {
+    const to = document.getElementById('mint-to').value.trim();
+    const amt = parseInt(document.getElementById('mint-amt').value);
+    if(!to || isNaN(amt)) return alert("Infos incorrectes");
+    
+    db.ref('users/'+to+'/solde').transaction(s => (s||0) + (amt*10));
+    db.ref('history').push().set({from: "TRÉSOR", to: to, amount: amt*10, type: "EMISSION", date: Date.now()});
+    alert("🚀 " + amt + " CFA émis vers " + to);
+}
+
+function doTx(type) {
+    const to = document.getElementById('to-phone').value.trim();
+    const amt = parseInt(document.getElementById('to-amt').value);
+    if(!to || isNaN(amt)) return alert("Infos incorrectes");
+
+    const frais = Math.ceil(amt * 0.01);
+    const total = (amt + frais) * 10;
+
+    if(currData.solde < total) return alert("Solde insuffisant");
+
+    db.ref('users/'+currUser+'/solde').set(currData.solde - total);
+    db.ref('users/'+to+'/solde').transaction(s => (s||0) + (amt*10));
+
+    if(type === 'withdraw') {
+        const partAgent = frais * 0.6;
+        const partAdmin = frais * 0.4;
+        db.ref('users/'+to+'/commissions').transaction(c => (c||0) + partAgent);
+        db.ref('users/'+to+'/solde').transaction(s => (s||0) + (partAgent*10));
+        db.ref('admin_gains').transaction(g => (g||0) + partAdmin);
+    } else {
+        db.ref('admin_gains').transaction(g => (g||0) + frais);
+    }
+
+    db.ref('history').push().set({from: currUser, to: to, amount: amt*10, type: type, date: Date.now()});
+    alert("Transaction réussie !");
+}
+
+function startScanner() {
+    const sc = new Html5Qrcode("reader");
+    sc.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (txt) => {
+        document.getElementById('to-phone').value = txt;
+        sc.stop();
+        alert("Client détecté : " + txt);
+    }).catch(err => alert("Erreur Caméra"));
+}
+
+function loadHistory() {
+    db.ref('history').limitToLast(10).on('value', snap => {
+        const l = document.getElementById('history-list');
+        l.innerHTML = "";
+        snap.forEach(s => {
+            const t = s.val();
+            if(t.from === currUser || t.to === currUser) {
+                const isOut = t.from === currUser;
+                l.innerHTML += `<div class="tx-item">
+                    <span>${t.type} ${isOut?'→':'←'}</span>
+                    <b style="color:${isOut? 'var(--red)':'var(--main)'}">${isOut?'-':'+'}${(t.amount/10).toLocaleString()}</b>
+                </div>`;
+            }
+        });
+    });
+}
+</script>
+</body>
+</html>
