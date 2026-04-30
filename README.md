@@ -1,2 +1,2 @@
 # IKAPAY-
-IKAPAY me
+paye moi 
