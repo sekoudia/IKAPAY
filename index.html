@@ -2,281 +2,271 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IKAPAY - Trésor National</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>IKAPAY MALI PRO</title>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="https://unpkg.com/html5-qrcode"></script>
-
     <style>
-        :root { --main: #1db954; --bg: #0b0b0b; --card: #1a1a1a; --gold: #fcd116; --text: #ffffff; --red: #ff4444; }
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; overflow-x: hidden; }
-        .card { background: var(--card); border-radius: 24px; padding: 20px; margin-bottom: 15px; border: 1px solid #333; position: relative; }
-        .tabs { display: flex; gap: 10px; margin-bottom: 20px; background: #252525; padding: 5px; border-radius: 15px; }
-        .tab { flex: 1; text-align: center; padding: 10px; border-radius: 12px; cursor: pointer; color: #888; font-weight: bold; }
-        .tab.active { background: var(--main); color: white; }
-        input, select { width: 100%; padding: 16px; margin: 8px 0; border-radius: 14px; border: 1px solid #333; background: #252525; color: white; box-sizing: border-box; font-size: 16px; outline: none; }
-        button { width: 100%; padding: 16px; border-radius: 30px; border: none; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; transition: 0.2s; }
+        :root { --main: #1db954; --bg: #0b0b0b; --card: #1a1a1a; --gold: #fcd116; --blue: #2196F3; --red: #ff4444; }
+        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 10px; padding-bottom: 80px; }
+        .card { background: var(--card); border-radius: 18px; padding: 15px; margin-bottom: 12px; border: 1px solid #333; }
+        input, select { width: 100%; padding: 14px; margin: 8px 0; border-radius: 10px; border: 1px solid #444; background: #222; color: white; font-size: 16px; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; border-radius: 25px; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        button:active { transform: scale(0.95); opacity: 0.8; }
         .btn-main { background: var(--main); color: white; }
-        .btn-gold { background: var(--gold); color: black; }
-        .solde-val { font-size: 42px; font-weight: 800; color: var(--main); text-align: center; margin: 10px 0; cursor: pointer; }
+        .btn-pro { background: var(--gold); color: black; }
+        .btn-blue { background: var(--blue); color: white; }
+        .btn-red { background: var(--red); color: white; }
+        .solde-amt { font-size: 32px; font-weight: 800; color: var(--main); text-align: center; }
         .hidden { display: none !important; }
-        .tx-item { padding: 15px; border-bottom: 1px solid #282828; display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
-        .confirm-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
-        #reader { width: 100%; border-radius: 15px; overflow: hidden; margin-top: 10px; background: #000; }
+        .hist-item { font-size: 12px; padding: 10px; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; }
+        .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: #111; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #333; z-index: 1000; }
+        .nav-btn { font-size: 20px; color: gray; }
+        .active { color: var(--main); }
+        .badge { font-size: 10px; background: var(--gold); color: black; padding: 2px 6px; border-radius: 5px; text-transform: uppercase; }
+        .grid-services { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     </style>
 </head>
 <body>
 
-    <div id="confirm-modal" class="confirm-overlay hidden">
-        <div class="card" style="width: 100%; border: 2px solid var(--gold);">
-            <h2 style="color:var(--gold); text-align:center;">AUTORISATION</h2>
-            <p id="confirm-msg" style="text-align:center; font-size: 18px;"></p>
-            <input type="password" id="confirm-pin" placeholder="Code Secret pour Valider">
-            <button class="btn-gold" onclick="processWithdraw(true)">CONFIRMER</button>
-            <button style="background:none; color:var(--red);" onclick="processWithdraw(false)">ANNULER</button>
-        </div>
-    </div>
-
-    <div id="auth-box" class="card">
-        <h2 style="text-align:center;">IKAPAY 🇲🇱</h2>
-        <div class="tabs">
-            <div id="tab-login" class="tab active" onclick="switchMode('login')">Connexion</div>
-            <div id="tab-signup" class="tab" onclick="switchMode('signup')">Inscription</div>
-        </div>
-        <input type="tel" id="auth-phone" value="+223">
-        <div id="signup-extra" class="hidden">
-            <input type="text" id="auth-name" placeholder="Nom ou Boutique">
-            <select id="auth-role">
-                <option value="user">Client Simple</option>
-                <option value="agent">Agent de Retrait</option>
-                <option value="boutique">Boutique / Commerçant</option>
-            </select>
-        </div>
-        <input type="password" id="auth-pin" placeholder="Code Secret (PIN)">
-        <button class="btn-main" onclick="handleAuth()">Ouvrir IkaPay</button>
+    <div id="auth-box" class="card" style="margin-top: 10%;">
+        <h2 style="text-align:center; color:var(--main);">IKAPAY 🇲🇱</h2>
+        <input type="tel" id="u-phone" value="+223" placeholder="Numéro">
+        <input type="password" id="u-pin" placeholder="PIN">
+        <select id="u-role">
+            <option value="user">👤 Client Simple</option>
+            <option value="agent">🏪 Agent IKAPAY</option>
+            <option value="chauffeur">🚕 Chauffeur</option>
+            <option value="boutique">🛍️ Boutique</option>
+            <option value="grossiste">📦 Grossiste</option>
+            <option value="restaurant">🍱 Restaurant</option>
+        </select>
+        <button class="btn-main" onclick="accessApp()">CONNEXION</button>
     </div>
 
     <div id="app-box" class="hidden">
         
-        <div id="admin-dashboard" class="card hidden" style="border: 1px solid var(--gold);">
-            <div style="color:var(--gold); font-weight:bold; text-align:center;">👑 TRÉSORIER ADMIN</div>
-            <input type="tel" id="mint-to" placeholder="Numéro bénéficiaire">
-            <input type="number" id="mint-amt" placeholder="Montant CFA">
-            <button class="btn-gold" onclick="adminMint()">🚀 ÉMETTRE CFA</button>
+        <div id="admin-tools" class="card hidden" style="border: 2px solid var(--red);">
+            <b style="color:var(--red);">🛡️ ADMIN CONTROL</b>
+            <input type="tel" id="adm-target" placeholder="Numéro">
+            <input type="number" id="adm-amt" placeholder="Montant">
+            <button class="btn-red" onclick="adminMint()">INJECTER MONNAIE</button>
         </div>
 
-        <div id="pro-dashboard" class="card hidden" style="border: 1px solid var(--main);">
-            <h3 id="pro-title" style="color:var(--main); margin-top:0;">🏪 ESPACE PRO</h3>
-            <div id="reader" class="hidden"></div>
-            <input type="tel" id="client-phone" placeholder="Numéro du Client">
-            <input type="number" id="pro-amt" placeholder="Montant CFA">
-            
-            <div style="display:flex; gap:10px;">
-                <button id="btn-withdraw" class="btn-main" onclick="requestProAction('RETRAIT')">Retrait</button>
-                <button id="btn-pay" class="btn-gold" onclick="requestProAction('PAIEMENT')">Encaisser</button>
+        <div class="card">
+            <div style="text-align:center;"><b id="disp-name">...</b> <span id="disp-role" class="badge"></span></div>
+            <div class="solde-amt" id="disp-solde">0 CFA</div>
+        </div>
+
+        <div id="tab-home">
+            <div id="pro-tools" class="card hidden">
+                <h3 style="color:var(--gold); margin:0 0 10px 0;">💼 Espace Professionnel</h3>
+                <input type="tel" id="pro-target" placeholder="Numéro Client">
+                <input type="number" id="pro-val" placeholder="Montant CFA">
+                
+                <div id="agent-actions" class="hidden">
+                    <div style="display:flex; gap:5px;">
+                        <button class="btn-main" style="flex:1;" onclick="proAction('DEPOT')">FAIRE DÉPÔT</button>
+                        <button class="btn-pro" style="flex:1;" onclick="proAction('ENCAISSER')">ENCAISSER CASH</button>
+                    </div>
+                </div>
+
+                <div id="commerce-actions" class="hidden">
+                    <div style="display:flex; gap:5px;">
+                        <button class="btn-pro" style="flex:1;" onclick="addDebt()">NOTER DETTE</button>
+                        <button class="btn-blue" style="flex:1;" onclick="postStock()">PUB STOCK</button>
+                    </div>
+                </div>
             </div>
-            <button onclick="toggleScanner()" style="background:#333; font-size:12px;">📷 Activer/Couper Caméra</button>
+
+            <div class="card">
+                <h3>🛠️ Services Rapides (IkaChat)</h3>
+                <div class="grid-services">
+                    <button class="btn-pro" onclick="reqService('TAXI')">🚕 Taxi / Moto</button>
+                    <button class="btn-main" onclick="reqService('EAT')">🥘 IkaEat</button>
+                    <button class="btn-blue" onclick="reqService('ELEC')">⚡ Électricien</button>
+                    <button class="btn-blue" onclick="reqService('PLOMB')">🔧 Plombier</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>💸 Envoyer Argent</h3>
+                <input type="tel" id="send-tel" placeholder="Destinataire">
+                <input type="number" id="send-amt" placeholder="Montant">
+                <button class="btn-main" onclick="sendMoney()">VALIDER L'ENVOI</button>
+            </div>
         </div>
 
-        <div class="card" style="text-align:center">
-            <b id="user-name">...</b> <span id="user-role-tag" style="font-size:10px; color:var(--gold)"></span>
-            <div class="solde-val" onclick="toggleMoney()"><span id="txt-solde">••••••</span> <small>CFA</small></div>
-            <div id="qrcode-box" style="background:white; padding:10px; display:inline-block; border-radius:18px; margin-top:10px;"></div>
+        <div id="tab-hist" class="hidden">
+            <div class="card"><h3>📜 Historique</h3><div id="hist-list"></div></div>
         </div>
 
-        <div class="card">
-            <h3>💸 Envoi d'argent</h3>
-            <input type="tel" id="to-phone" placeholder="Numéro destinataire">
-            <input type="number" id="to-amt" placeholder="Montant CFA">
-            <button class="btn-main" onclick="doTx()">Envoyer</button>
+        <div id="tab-chat" class="hidden">
+            <div class="card">
+                <h3>💬 IkaChat 🇲🇱 (Réseau Pro)</h3>
+                <div id="chat-msgs" style="height:350px; overflow-y:auto; background:#222; padding:10px; border-radius:10px;"></div>
+                <div style="display:flex; gap:5px; margin-top:10px;">
+                    <input type="text" id="chat-input" placeholder="Annonce ou message...">
+                    <button class="btn-main" style="width:70px;" onclick="sendChatMsg()">OK</button>
+                </div>
+            </div>
         </div>
 
-        <div class="card">
-            <h3>📜 Historique</h3>
-            <div id="history-list"></div>
+        <div class="nav-bar">
+            <div class="nav-btn active" id="n-h" onclick="showTab('home')">🏠</div>
+            <div class="nav-btn" id="n-hi" onclick="showTab('hist')">📜</div>
+            <div class="nav-btn" id="n-c" onclick="showTab('chat')">💬</div>
+            <div class="nav-btn" onclick="location.reload()">🚪</div>
         </div>
-
-        <button onclick="location.reload()" style="background:none; color:gray; width:100%; margin-bottom:50px;">Déconnexion</button>
     </div>
 
 <script>
-// CONFIG FIREBASE
+// CONFIG
 const firebaseConfig = {
-  apiKey: "AIzaSyAzhSslKnrPOsgmxtR8OTqv__QCR-5geSU",
-  authDomain: "malicoin.firebaseapp.com",
-  databaseURL: "https://malicoin-default-rtdb.firebaseio.com",
-  projectId: "malicoin",
-  storageBucket: "malicoin.firebasestorage.app",
-  appId: "1:728024400418:web:45616567fc3aa9e02a007b"
+    apiKey: "AIzaSyAzhSslKnrPOsgmxtR8OTqv__QCR-5geSU",
+    authDomain: "malicoin.firebaseapp.com",
+    databaseURL: "https://malicoin-default-rtdb.firebaseio.com",
+    projectId: "malicoin",
+    storageBucket: "malicoin.firebasestorage.app",
+    appId: "1:728024400418:web:45616567fc3aa9e02a007b"
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// NUMEROS DE TEST
-const TEST_CODES = {
-    "+22396804164": "Davis2006",
-    "+22377597001": "888888",
-    "+22376022912": "760229",
-    "+22376831895": "768318"
-};
+const ADMINS = ["+22396804164", "+22377597001", "+22376022912", "+22376831895"];
+let me = null, myPhone = "";
 
-let currUser = "";
-let currData = {};
-let isHidden = true;
-let html5QrCode = null;
+function accessApp() {
+    myPhone = document.getElementById('u-phone').value.trim();
+    const pin = document.getElementById('u-pin').value.trim();
+    const role = document.getElementById('u-role').value;
 
-function switchMode(m) {
-    document.getElementById('tab-login').classList.toggle('active', m==='login');
-    document.getElementById('tab-signup').classList.toggle('active', m==='signup');
-    document.getElementById('signup-extra').classList.toggle('hidden', m==='login');
-}
-
-function handleAuth() {
-    const p = document.getElementById('auth-phone').value.trim();
-    const pin = document.getElementById('auth-pin').value.trim();
-    
-    db.ref('users/'+p).once('value', snap => {
-        const d = snap.val();
-        if((TEST_CODES[p] && TEST_CODES[p] === pin) || (d && d.pin === pin)) {
-            launch(p);
-        } else if(!d && !document.getElementById('signup-extra').classList.contains('hidden')) {
-            const name = document.getElementById('auth-name').value;
-            const role = document.getElementById('auth-role').value;
-            db.ref('users/'+p).set({nom: name, pin: pin, role: role, solde: 0}).then(()=>launch(p));
-        } else {
-            alert("Identifiants incorrects");
+    db.ref('users/' + myPhone).once('value', s => {
+        if(s.exists()){ launch(myPhone, s.val()); } 
+        else {
+            const newUser = { role: role, solde: 0, pin: pin };
+            db.ref('users/' + myPhone).set(newUser).then(() => launch(myPhone, newUser));
         }
     });
 }
 
-function launch(p) {
-    currUser = p;
+function launch(phone, data) {
+    me = data;
     document.getElementById('auth-box').classList.add('hidden');
     document.getElementById('app-box').classList.remove('hidden');
+    document.getElementById('disp-name').innerText = phone;
+    document.getElementById('disp-role').innerText = me.role;
 
-    if(p === "+22396804164") document.getElementById('admin-dashboard').classList.remove('hidden');
+    if(ADMINS.includes(phone)) document.getElementById('admin-tools').classList.remove('hidden');
 
-    db.ref('users/'+p).on('value', snap => {
-        currData = snap.val() || {nom:"Inconnu", role:"user", solde:0};
-        document.getElementById('user-name').innerText = currData.nom;
-        document.getElementById('user-role-tag').innerText = `(${currData.role.toUpperCase()})`;
-        
-        if(currData.role === 'agent' || currData.role === 'boutique') {
-            document.getElementById('pro-dashboard').classList.remove('hidden');
-            document.getElementById('pro-title').innerText = currData.role === 'agent' ? "🏪 ESPACE AGENT" : "🛍️ BOUTIQUE";
-            document.getElementById('btn-withdraw').classList.toggle('hidden', currData.role === 'boutique');
-        }
-        refreshUI();
-    });
-
-    // ECOUTE DES DEMANDES (POUR LE CLIENT)
-    db.ref('requests/'+p).on('value', snap => {
-        const req = snap.val();
-        if(req) {
-            window.activeReq = req;
-            document.getElementById('confirm-msg').innerText = `${req.agentName} demande un ${req.type} de ${req.amount/10} CFA`;
-            document.getElementById('confirm-modal').classList.remove('hidden');
-        } else {
-            document.getElementById('confirm-modal').classList.add('hidden');
-        }
-    });
-
-    document.getElementById('qrcode-box').innerHTML = "";
-    new QRCode(document.getElementById('qrcode-box'), {text: p, width: 120, height: 120});
-    loadHistory();
-}
-
-function toggleMoney() { isHidden = !isHidden; refreshUI(); }
-function refreshUI() {
-    document.getElementById('txt-solde').innerText = isHidden ? "••••••" : (currData.solde/10).toLocaleString();
-}
-
-// ACTION PRO (RETRAIT OU PAIEMENT)
-function requestProAction(type) {
-    const cl = document.getElementById('client-phone').value.trim();
-    const amt = parseInt(document.getElementById('pro-amt').value) * 10;
-    if(!cl || !amt) return alert("Entrez numéro et montant");
-    
-    db.ref('requests/'+cl).set({
-        agent: currUser,
-        agentName: currData.nom,
-        amount: amt,
-        type: type,
-        date: Date.now()
-    });
-    alert("Demande envoyée au client !");
-}
-
-function processWithdraw(confirm) {
-    const pin = document.getElementById('confirm-pin').value;
-    const req = window.activeReq;
-    if(confirm) {
-        if(pin !== currData.pin) return alert("PIN Incorrect !");
-        if(currData.solde < req.amount) return alert("Solde insuffisant");
-
-        db.ref('users/'+currUser+'/solde').transaction(s => s - req.amount);
-        db.ref('users/'+req.agent+'/solde').transaction(s => (s||0) + req.amount);
-        db.ref('history').push().set({from: currUser, to: req.agent, amount: req.amount, type: req.type, date: Date.now()});
-        alert("Transaction réussie !");
+    if(['agent', 'boutique', 'grossiste', 'restaurant'].includes(me.role)) {
+        document.getElementById('pro-tools').classList.remove('hidden');
+        if(me.role === 'agent') document.getElementById('agent-actions').classList.remove('hidden');
+        else document.getElementById('commerce-actions').classList.remove('hidden');
     }
-    db.ref('requests/'+currUser).remove();
-    document.getElementById('confirm-pin').value = "";
+
+    db.ref('users/'+phone+'/solde').on('value', s => {
+        document.getElementById('disp-solde').innerText = (s.val()||0).toLocaleString() + " CFA";
+        me.solde = s.val()||0;
+    });
+
+    loadChat(); loadHist();
 }
 
-function doTx() {
-    const to = document.getElementById('to-phone').value.trim();
-    const amt = parseInt(document.getElementById('to-amt').value) * 10;
-    if(currData.solde < amt) return alert("Solde insuffisant");
-    db.ref('users/'+currUser+'/solde').transaction(s => s - amt);
+// LOGIQUE AGENT
+function proAction(type) {
+    const target = document.getElementById('pro-target').value;
+    const amt = parseInt(document.getElementById('pro-val').value);
+    if(!target || !amt) return alert("Remplir les champs");
+
+    if(type === 'DEPOT') {
+        if(me.solde < amt) return alert("Solde insuffisant");
+        db.ref('users/'+myPhone+'/solde').transaction(s => s - amt);
+        db.ref('users/'+target+'/solde').transaction(s => (s||0) + amt);
+        logAction(myPhone, "Dépôt vers "+target, -amt);
+        logAction(target, "Reçu de l'Agent", amt);
+        db.ref('chat').push().set({ u: "IKAPAY", m: `✅ Dépôt réussi de ${amt} F vers ${target}`, t: Date.now() });
+        alert("Dépôt effectué !");
+    } else {
+        // ENCAISSEMENT CASH
+        db.ref('chat').push().set({ u: "AGENT", m: `🏧 ENCAISSEMENT : ${target} doit verser ${amt} F cash.`, t: Date.now() });
+        alert("Alerte encaissement envoyée !");
+    }
+    document.getElementById('pro-target').value = ""; document.getElementById('pro-val').value = "";
+}
+
+// SERVICES LIÉS AU CHAT
+function reqService(srv) {
+    const s = {TAXI:"🚕 TAXI/MOTO", EAT:"🥘 IKAEAT", ELEC:"⚡ ÉLECTRICIEN", PLOMB:"🔧 PLOMBIER"};
+    db.ref('chat').push().set({ 
+        u: myPhone, 
+        m: `🚨 DEMANDE : Besoin de [${s[srv]}] immédiatement !`, 
+        t: Date.now() 
+    });
+    alert("Votre demande est sur IkaChat !");
+}
+
+function sendChatMsg() {
+    const inp = document.getElementById('chat-input');
+    if(!inp.value) return;
+    db.ref('chat').push().set({ u: myPhone, m: inp.value, t: Date.now() });
+    inp.value = "";
+}
+
+function loadChat() {
+    db.ref('chat').limitToLast(30).on('value', s => {
+        const div = document.getElementById('chat-msgs'); div.innerHTML = "";
+        s.forEach(c => {
+            const v = c.val();
+            const isSystem = v.u === "IKAPAY" || v.u === "AGENT";
+            div.innerHTML += `<div style="margin-bottom:10px; border-left:2px solid ${isSystem?'var(--main)':'#444'}; padding-left:8px;">
+                <b style="color:${isSystem?'var(--main)':'var(--gold)'}">${v.u}</b><br>${v.m}</div>`;
+        });
+        div.scrollTop = div.scrollHeight;
+    });
+}
+
+function sendMoney() {
+    const to = document.getElementById('send-tel').value;
+    const amt = parseInt(document.getElementById('send-amt').value);
+    if(me.solde < amt) return alert("Solde insuffisant");
+    db.ref('users/'+myPhone+'/solde').transaction(s => s - amt);
     db.ref('users/'+to+'/solde').transaction(s => (s||0) + amt);
-    db.ref('history').push().set({from: currUser, to: to, amount: amt, type: "ENVOI", date: Date.now()});
-    alert("Envoi réussi");
+    logAction(myPhone, "Envoyé à "+to, -amt);
+    logAction(to, "Reçu de "+myPhone, amt);
+    document.getElementById('send-tel').value = ""; document.getElementById('send-amt').value = "";
+    alert("Envoyé !");
+}
+
+function logAction(phone, desc, amt) {
+    db.ref('history/'+phone).push().set({ desc, amt, date: new Date().toLocaleString() });
+}
+
+function loadHist() {
+    db.ref('history/'+myPhone).on('value', s => {
+        const l = document.getElementById('hist-list'); l.innerHTML = "";
+        s.forEach(c => {
+            const h = c.val();
+            l.innerHTML = `<div class="hist-item"><span>${h.desc}</span><b style="color:${h.amt>0?'var(--main)':'var(--red)'}">${h.amt} F</b></div>` + l.innerHTML;
+        });
+    });
+}
+
+function showTab(t) {
+    document.getElementById('tab-home').classList.toggle('hidden', t !== 'home');
+    document.getElementById('tab-hist').classList.toggle('hidden', t !== 'hist');
+    document.getElementById('tab-chat').classList.toggle('hidden', t !== 'chat');
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('n-'+(t==='home'?'h':t==='hist'?'hi':'c')).classList.add('active');
 }
 
 function adminMint() {
-    const to = document.getElementById('mint-to').value.trim();
-    const amt = parseInt(document.getElementById('mint-amt').value) * 10;
-    db.ref('users/'+to+'/solde').transaction(s => (s||0) + amt);
-    db.ref('history').push().set({from: "TRESOR", to: to, amount: amt, type: "EMISSION", date: Date.now()});
-    alert("CFA Émis !");
-}
-
-function toggleScanner() {
-    const readerDiv = document.getElementById('reader');
-    if(readerDiv.classList.contains('hidden')) {
-        readerDiv.classList.remove('hidden');
-        html5QrCode = new Html5Qrcode("reader");
-        html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (txt) => {
-            document.getElementById('client-phone').value = txt;
-            document.getElementById('to-phone').value = txt;
-            toggleScanner();
-        });
-    } else {
-        if(html5QrCode) html5QrCode.stop().then(() => {
-            readerDiv.classList.add('hidden');
-        });
-    }
-}
-
-function loadHistory() {
-    db.ref('history').limitToLast(10).on('value', snap => {
-        const l = document.getElementById('history-list');
-        l.innerHTML = "";
-        snap.forEach(s => {
-            const t = s.val();
-            if(t.from === currUser || t.to === currUser) {
-                const isOut = t.from === currUser;
-                l.innerHTML += `<div class="tx-item">
-                    <span>${t.type} ${isOut ? '→' : '←'}</span>
-                    <b style="color:${isOut?'var(--red)':'var(--main)'}">${isOut?'-':'+'}${t.amount/10}</b>
-                </div>`;
-            }
-        });
-    });
+    const t = document.getElementById('adm-target').value;
+    const a = parseInt(document.getElementById('adm-amt').value);
+    db.ref('users/'+t+'/solde').transaction(s => (s||0) + a);
+    alert("Injection réussie");
 }
 </script>
 </body>
-                </html>
-
+</html>
