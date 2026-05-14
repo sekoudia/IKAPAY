@@ -3,352 +3,1204 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>IKAPAY MALI PRO</title>
+    <title>IKAPAY ELITE V10 - MALI</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        :root { --main: #1db954; --bg: #0b0b0b; --card: #1a1a1a; --gold: #fcd116; --red: #ff4444; --blue: #2196F3; --text: #eee; }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: sans-serif; }
-        body { background: var(--bg); color: var(--text); margin: 0; padding: 10px; padding-bottom: 90px; }
-        .card { background: var(--card); border-radius: 18px; padding: 15px; margin-bottom: 12px; border: 1px solid #333; }
+        :root {
+            --main: #1db954;
+            --bg: #080808;
+            --card: #141414;
+            --card2: #1e1e1e;
+            --gold: #fcd116;
+            --red: #ff3b3b;
+            --blue: #2196F3;
+            --purple: #9c27b0;
+            --buzz: linear-gradient(135deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+            --text: #f0f0f0;
+            --sub: #888;
+            --border: #2a2a2a;
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Outfit', sans-serif; }
+        body { background: var(--bg); color: var(--text); margin: 0; padding: 12px; padding-bottom: 90px; overflow-x: hidden; }
+
+        /* === CARDS === */
+        .card { background: var(--card); border-radius: 20px; padding: 16px; margin-bottom: 12px; border: 1px solid var(--border); }
         .hidden { display: none !important; }
-        input, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #444; background: #222; color: white; outline: none; }
-        button { width: 100%; padding: 14px; border-radius: 25px; border: none; font-weight: bold; cursor: pointer; background: var(--main); color: white; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .solde-amt { font-size: 30px; font-weight: 800; color: var(--main); text-align: center; margin: 10px 0; }
-        
-        .modal-full { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 5000; padding: 20px; overflow-y: auto; display: none; animation: slideUp 0.3s; }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
-        #mini-chat { position: fixed; bottom: 85px; left: 10px; right: 10px; height: 60vh; background: #151515; border: 2px solid var(--main); border-radius: 20px; z-index: 6000; display: flex; flex-direction: column; box-shadow: 0 0 30px rgba(0,0,0,0.8); }
-        .chat-h { padding: 12px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; font-weight: bold; color: var(--main); }
-        .chat-b { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
-        .bubble { padding: 8px 12px; border-radius: 12px; max-width: 80%; font-size: 13px; }
-        .b-me { background: var(--main); align-self: flex-end; }
-        .b-other { background: #333; align-self: flex-start; }
+        /* === INPUTS === */
+        input, select, textarea {
+            width: 100%; padding: 13px 16px; margin: 7px 0;
+            border-radius: 12px; border: 1px solid #2e2e2e;
+            background: #1c1c1c; color: white; outline: none;
+            font-family: 'Outfit', sans-serif; font-size: 14px;
+            transition: border-color 0.2s;
+        }
+        input:focus, select:focus, textarea:focus { border-color: var(--main); }
+        textarea { min-height: 80px; resize: none; }
 
-        .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: #111; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #333; z-index: 1000; }
-        .nav-btn { font-size: 11px; color: #555; cursor: pointer; display: flex; flex-direction: column; align-items: center; text-transform: uppercase; font-weight: bold; }
-        .nav-btn.active { color: var(--main); }
-        .grid-view { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        /* === BUTTONS === */
+        button {
+            width: 100%; padding: 14px; border-radius: 50px; border: none;
+            font-weight: 700; font-size: 14px; cursor: pointer;
+            background: var(--main); color: white;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            transition: all 0.2s; letter-spacing: 0.5px;
+        }
+        button:active { transform: scale(0.96); opacity: 0.85; }
+        .btn-sm { padding: 9px 14px; font-size: 12px; border-radius: 25px; width: auto; }
+
+        /* === SOLDE === */
+        .solde-wrap { text-align: center; padding: 10px 0; }
+        .solde-label { font-size: 11px; color: var(--sub); text-transform: uppercase; letter-spacing: 2px; }
+        .solde-amt { font-size: 36px; font-weight: 900; color: var(--main); margin: 4px 0; }
+
+        /* === GRIDS === */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+
+        /* === NAV BAR === */
+        .nav-bar {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: #0e0e0e; display: flex; justify-content: space-around;
+            padding: 10px 0 14px; border-top: 1px solid var(--border); z-index: 1000;
+        }
+        .nav-btn { font-size: 10px; color: var(--sub); cursor: pointer; text-align: center; flex: 1; line-height: 1.5; transition: color 0.2s; }
+        .nav-btn span { font-size: 20px; display: block; }
+        .nav-btn.active { color: var(--main); font-weight: 700; }
+
+        /* === MODAL PLEIN ÉCRAN === */
+        .modal-full {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg); z-index: 5000; padding: 20px;
+            overflow-y: auto; display: none;
+            animation: slideUp 0.3s ease;
+        }
+        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-close { font-size: 32px; color: var(--red); cursor: pointer; line-height: 1; }
+
+        /* === AUTH === */
+        .auth-logo { text-align: center; margin-bottom: 30px; }
+        .auth-logo h1 { font-size: 32px; font-weight: 900; color: var(--main); margin: 0; }
+        .auth-logo p { color: var(--sub); font-size: 13px; margin: 5px 0 0; }
+
+        /* === SERVICE BUTTONS === */
+        .service-btn {
+            height: 85px; flex-direction: column; border-radius: 18px !important;
+            font-size: 11px; font-weight: 700; gap: 5px;
+        }
+        .service-btn span { font-size: 26px; }
+
+        /* === BUZZ POSTS === */
+        .buzz-item { background: #000; border-radius: 18px; margin-bottom: 15px; border: 1px solid #1a1a1a; overflow: hidden; position: relative; }
+        .buzz-media { width: 100%; max-height: 480px; object-fit: cover; background: #111; display: block; }
+        .buzz-info { padding: 14px; }
+        .buzz-author { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .buzz-author b { color: var(--text); font-size: 15px; }
+        .buzz-count { color: var(--main); font-weight: 700; font-size: 13px; }
+        .buzz-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+
+        /* === ANIMATION BUZZ === */
+        .buzz-anim {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            font-size: 72px; font-weight: 900; color: var(--main);
+            text-shadow: 0 0 30px rgba(29,185,84,0.6);
+            pointer-events: none; z-index: 100; opacity: 0;
+        }
+        @keyframes buzz-pop {
+            0%   { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+            40%  { transform: translate(-50%, -50%) scale(1.6); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1.2); opacity: 0; }
+        }
+        .animate-buzz { animation: buzz-pop 0.75s ease-out forwards; }
+
+        /* === CHAT === */
+        #chat-box {
+            height: 380px; overflow-y: auto; display: flex; flex-direction: column;
+            gap: 8px; padding: 12px; background: #0a0a0a; border-radius: 16px; border: 1px solid var(--border);
+        }
+        .msg-me { margin-left: auto; background: var(--main); border-radius: 16px 16px 2px 16px; color: white; max-width: 80%; padding: 10px 14px; font-size: 14px; }
+        .msg-other { margin-right: auto; background: var(--card2); border-radius: 16px 16px 16px 2px; max-width: 80%; padding: 10px 14px; font-size: 14px; }
+
+        /* === BADGES / TAGS === */
+        .badge { font-size: 10px; padding: 3px 10px; border-radius: 20px; font-weight: 700; display: inline-block; }
+        .badge-admin { color: var(--red); border: 1px solid var(--red); }
+        .badge-elite { color: var(--gold); border: 1px solid var(--gold); }
+
+        /* === DASHBOARD STAR === */
+        .star-dash { background: var(--buzz); border-radius: 20px; padding: 18px; margin-bottom: 12px; color: white; }
+        .star-dash h3 { margin: 0 0 14px; font-size: 16px; }
+        .stat-row { display: flex; justify-content: space-around; text-align: center; }
+        .stat-val { font-size: 24px; font-weight: 900; }
+        .stat-lbl { font-size: 11px; opacity: 0.8; }
+
+        /* === CATALOGUE === */
+        .cat-item { background: var(--card2); border-radius: 16px; overflow: hidden; border: 1px solid var(--border); }
+        .cat-img { width: 100%; height: 120px; object-fit: cover; }
+        .cat-body { padding: 10px; }
+        .cat-price { color: var(--main); font-weight: 900; font-size: 15px; }
+
+        /* === HISTORIQUE === */
+        .hist-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
+        .hist-item:last-child { border-bottom: none; }
+
+        /* === RAPPORT ADMIN === */
+        .admin-stat { background: var(--card2); border-radius: 14px; padding: 14px; text-align: center; }
+        .admin-stat .val { font-size: 22px; font-weight: 900; color: var(--gold); }
+        .admin-stat .lbl { font-size: 11px; color: var(--sub); margin-top: 4px; }
+
+        /* === DELETE BTN === */
+        .del-btn { background: none; border: none; color: var(--red); font-size: 18px; cursor: pointer; width: auto; padding: 0; line-height: 1; }
+        .del-btn:active { transform: scale(0.9); }
+
+        /* === TOAST NOTIF === */
+        #toast {
+            position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(20px);
+            background: var(--main); color: white; padding: 12px 24px; border-radius: 50px;
+            font-weight: 700; font-size: 14px; z-index: 9999; opacity: 0;
+            transition: all 0.3s; pointer-events: none; white-space: nowrap;
+        }
+        #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        /* === TAXI === */
+        .course-item { display: flex; justify-content: space-between; align-items: center; background: var(--card2); border-radius: 14px; padding: 12px; margin-bottom: 8px; }
     </style>
 </head>
 <body>
 
-    <div id="auth-box" class="card" style="margin-top: 15%;">
-        <h2 style="text-align:center; color:var(--main);">IKAPAY MALI 🇲🇱</h2>
-        <input type="text" id="u-name" placeholder="Nom ou Boutique">
-        <input type="tel" id="u-phone" value="+223" placeholder="Numéro">
-        <input type="password" id="u-pin" placeholder="PIN">
-        <select id="u-role">
-            <option value="Client">👤 Client</option>
-            <option value="Agent">🏪 Agent</option>
-            <option value="Restaurant">🍱 Restaurant</option>
-            <option value="Chauffeur">🚕 Taxi</option>
-            <option value="Boutique">🛍️ Boutique</option>
-        </select>
-        <button onclick="accessApp()">ACCÉDER</button>
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- ======================== PAGE AUTH ======================== -->
+<div id="page-auth" class="card" style="margin-top: 10%; max-width: 500px; margin-left: auto; margin-right: auto;">
+    <div class="auth-logo">
+        <h1>🇲🇱 IKAPAY</h1>
+        <p>ELITE V10 — Plateforme Mali</p>
     </div>
+    <input type="text" id="u-name" placeholder="Nom Complet">
+    <input type="tel" id="u-phone" placeholder="Numéro (+223... ou 96804164)">
+    <input type="password" id="u-pin" placeholder="PIN (4 chiffres)" maxlength="10">
+    <select id="u-role">
+        <option value="Client">👤 Client</option>
+        <option value="Elite">⭐ Créateur / Star</option>
+        <option value="Agent">🏪 Agent</option>
+        <option value="Chauffeur">🚕 Chauffeur</option>
+        <option value="Business">🛍️ Boutique / Restaurant</option>
+        <option value="Artisan">🔧 Artisan</option>
+    </select>
+    <button onclick="login()" style="margin-top: 10px; font-size: 16px;">ACCÉDER →</button>
+</div>
 
-    <div id="app-box" class="hidden">
-        <div id="admin-panel" class="card hidden" style="border: 2px solid var(--red);">
-            <b style="color:var(--red);">🛡️ ADMIN</b>
-            <div style="display:flex; gap:5px;"><input type="tel" id="adm-target" placeholder="N°"><input type="number" id="adm-amt" placeholder="Somme"></div>
-            <button style="background:var(--red);" onclick="adminMint()">INJECTER</button>
-        </div>
+<!-- ======================== APP PRINCIPALE ======================== -->
+<div id="main-app" class="hidden">
 
+    <!-- SECTION ACCUEIL -->
+    <div id="section-home">
+        <!-- Header Profil -->
         <div class="card">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <b id="disp-name">...</b>
-                <div style="color:var(--red); font-weight:bold;" onclick="location.reload()">SORTIR</div>
-            </div>
-            <div class="solde-amt" id="disp-solde">0 CFA</div>
-            <button style="background:#333; font-size:12px;" onclick="showMyQR()">📱 MON QR CODE</button>
-        </div>
-
-        <div id="tab-home">
-            <div id="agent-tools" class="card hidden">
-                <h4>🏪 Guichet Agent</h4>
-                <input type="tel" id="ag-target" placeholder="Numéro Client">
-                <input type="number" id="ag-amt" placeholder="Montant">
-                <div style="display:flex; gap:10px;">
-                    <button style="flex:1;" onclick="agentAction('DEPOT')">DÉPÔT</button>
-                    <button style="flex:1; background:var(--red);" onclick="agentAction('RETRAIT')">RETRAIT</button>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <div>
+                    <div id="disp-name" style="font-weight:700; font-size:16px;">...</div>
+                    <div id="disp-role" style="color:var(--sub); font-size:12px;"></div>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span id="admin-tag" class="badge badge-admin hidden">ADMIN</span>
+                    <span id="elite-tag" class="badge badge-elite hidden">★ STAR</span>
+                    <button onclick="location.reload()" style="width:auto; padding:8px 16px; background:#1e1e1e; border:1px solid var(--border); font-size:12px;">Sortir</button>
                 </div>
             </div>
-
-            <div id="shop-tools" class="card hidden">
-                <h4>🛍️ Boutique / Restaurant</h4>
-                <input type="text" id="p-title" placeholder="Nom produit">
-                <input type="number" id="p-price" placeholder="Prix">
-                <input type="file" onchange="previewFile(this)">
-                <button onclick="uploadItem()">PUBLIER ARTICLE</button>
-                <hr style="border:0; border-top:1px solid #333; margin:15px 0;">
-                <b style="color:var(--blue);">📓 Carnet de Dettes</b>
-                <input type="text" id="dette-n" placeholder="Nom client">
-                <input type="number" id="dette-v" placeholder="Somme due">
-                <button style="background:#444;" onclick="addDebt()">NOTER DETTE</button>
-                <div id="dette-list" style="margin-top:10px;"></div>
+            <div class="solde-wrap">
+                <div class="solde-label">Solde disponible</div>
+                <div class="solde-amt" id="disp-solde">0 CFA</div>
             </div>
-
-            <div id="taxi-tools" class="card hidden">
-                <h4 style="color:var(--gold);">🚕 Alertes Taxi</h4>
-                <div id="taxi-list"></div>
-            </div>
-
-            <div class="card">
-                <h3>🚀 Nos Services</h3>
-                <div class="grid-view">
-                    <button style="background:var(--blue);" onclick="openCatalog('shop')">🛍️ IkaShop</button>
-                    <button style="background:var(--gold); color:black;" onclick="openCatalog('food')">🍱 IkaEat</button>
-                    <button style="background:#444;" onclick="requestTaxi()">🚕 IkaTaxi</button>
-                    <button style="background:#222;" onclick="showTab('chat', document.querySelectorAll('.nav-btn')[1])">💬 Chat</button>
-                </div>
-            </div>
-
-            <div class="card" style="border: 1px solid var(--main);">
-                <h3>💸 Envoi d'argent</h3>
-                <input type="tel" id="send-tel" placeholder="N° du destinataire">
-                <input type="number" id="send-amt" placeholder="Montant CFA">
-                <button onclick="sendCash()">ENVOYER MAINTENANT</button>
+            <div class="grid-2">
+                <button style="background:#1e1e1e; border:1px solid var(--border);" onclick="showQR()">📱 MON QR</button>
+                <button style="background:var(--blue);" onclick="openLitige()">⚠️ LITIGE</button>
             </div>
         </div>
 
-        <div id="tab-chat" class="hidden">
-            <div class="card">
-                <h3>💬 Salon Bamako</h3>
-                <div id="chat-msgs" style="height:350px; overflow-y:auto; background:#111; padding:10px;"></div>
-                <div style="display:flex; gap:5px; margin-top:5px;">
-                    <input type="text" id="chat-in" style="margin:0;">
-                    <button style="width:60px;" onclick="sendMsg()">OK</button>
-                </div>
+        <!-- Dashboard Pro (Agent / Chauffeur / Admin) -->
+        <div id="dashboard-pro"></div>
+
+        <!-- Services -->
+               <div class="card">
+            <h3 style="color:var(--gold); margin:0 0 14px; font-size:15px;">🌍 SERVICES</h3>
+            <div class="grid-3">
+                <button class="service-btn" style="background:#2196F3;" onclick="openCatalog('Grossiste','🚛 GROSSISTES')"><span>🚛</span>IkaGross</button>
+                <button class="service-btn" style="background:var(--purple);" onclick="openCatalog('Boutique','🛍️ BOUTIQUES')"><span>🛍️</span>IkaShop</button>
+                <button class="service-btn" style="background:#e6a817; color:#000;" onclick="openCatalog('Artisan','🔧 ARTISANS')"><span>🔧</span>Artisan</button>
+                <button class="service-btn" style="background:var(--red);" onclick="requestTaxi()"><span>🚕</span>IkaTaxy</button>
+                <button class="service-btn" style="background:var(--buzz);" onclick="changeTab('buzz')"><span>🎬</span>IkaBuz</button>
+                <button class="service-btn" style="background:#e65100;" onclick="openCatalog('Restaurant','🍱 RESTAURANTS')"><span>🍱</span>IkaEat</button>
+                <button class="service-btn" style="background:#555;" onclick="openDebtManager()"><span>📝</span>IkaDebt</button>
             </div>
         </div>
+ 
 
-        <div class="nav-bar">
-            <div class="nav-btn active" onclick="showTab('home', this)">🏠<br>Accueil</div>
-            <div class="nav-btn" onclick="showTab('chat', this)">💬<br>Quartier</div>
+        <!-- Envoyer de l'argent -->
+        <div class="card" style="border: 1px solid var(--main);">
+            <h3 style="margin:0 0 10px; font-size:15px;">💸 ENVOYER DE L'ARGENT</h3>
+            <input type="tel" id="send-tel" placeholder="Numéro destinataire (+223...)">
+            <input type="number" id="send-amt" placeholder="Montant en CFA">
+            <input type="password" id="send-pin" placeholder="Votre PIN de confirmation">
+            <button onclick="sendMoney()" style="margin-top:8px;">ENVOYER →</button>
         </div>
     </div>
 
-    <div id="mini-chat" class="hidden">
-        <div class="chat-h">
-            <span id="chat-title">Chat Direct</span>
-            <span style="color:var(--red);" onclick="closeMiniChat()">[ FERMER ]</span>
+    <!-- SECTION IKABUZ -->
+    <div id="section-buzz" class="hidden">
+        <div id="star-stats-container"></div>
+
+        <!-- Formulaire de publication -->
+        <div class="card">
+            <h2 style="color:var(--gold); margin:0 0 14px; font-size:18px;">🎬 NOUVELLE PUBLICATION</h2>
+            <textarea id="buzz-txt" placeholder="Décris ton contenu, ton article..."></textarea>
+            <input type="file" id="buzz-file" accept="image/*,video/*" style="display:none;">
+            <label for="buzz-file" style="display:block; background:#1a1a1a; padding:14px; border-radius:12px; text-align:center; cursor:pointer; border:1px dashed var(--main); margin:8px 0; font-size:13px; color:var(--sub);">
+                📂 Choisir un média (Image / Vidéo)
+            </label>
+            <div id="media-preview" style="margin-bottom:8px;"></div>
+            <div class="grid-2">
+                <button style="background:var(--buzz);" onclick="uploadBuzz()">🎬 PUBLIER BUZZ</button>
+                <button id="btn-pro-cat" class="hidden" onclick="publishToCatalog()" style="background:var(--purple);">📦 VITRINE</button>
+            </div>
         </div>
-        <div id="mini-msgs" class="chat-b"></div>
-        <div style="padding:10px; background:#222; display:flex; gap:5px; border-radius:0 0 20px 20px;">
-            <input type="text" id="mini-in" placeholder="Message..." style="margin:0;">
-            <button style="width:60px;" onclick="sendMiniMsg()">OK</button>
-        </div>
+
+        <!-- Feed -->
+        <div id="buzz-container"></div>
     </div>
 
-    <div id="modal-catalog" class="modal-full">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h2 id="cat-head" style="color:var(--gold);">Catalogue</h2>
-            <b style="color:var(--red); font-size:30px;" onclick="document.getElementById('modal-catalog').style.display='none'">×</b>
+    <!-- MODAL PLEIN ÉCRAN -->
+    <div id="ui-modal" class="modal-full">
+        <div class="modal-header">
+            <h2 id="modal-title" style="color:var(--main); margin:0; font-size:20px;">...</h2>
+            <span class="modal-close" onclick="closeModal()">✕</span>
         </div>
-        <div class="grid-view" id="cat-grid" style="margin-top:20px;"></div>
+        <div id="modal-content"></div>
     </div>
 
-    <div id="modal-qr" class="modal-full" style="text-align:center; background:rgba(0,0,0,0.9);">
-        <div class="card" style="margin-top:20%; background:white; color:black; padding:30px;">
-            <div id="qr-display" style="display:inline-block;"></div>
-            <h2 id="qr-info" style="color:black;"></h2>
-            <button style="background:var(--red);" onclick="document.getElementById('modal-qr').style.display='none'">FERMER</button>
-        </div>
+    <!-- NAVIGATION BAS -->
+    <div id="bottom-nav" class="nav-bar hidden">
+        <div class="nav-btn active" onclick="changeTab('home')"><span>🏠</span>Accueil</div>
+        <div class="nav-btn" onclick="changeTab('buzz')"><span>🎬</span>IkaBuz</div>
+        <div class="nav-btn" onclick="openHistory()"><span>📋</span>Historique</div>
+        <div class="nav-btn" onclick="openProfile()"><span>👤</span>Profil</div>
     </div>
+</div>
 
 <script>
-const firebaseConfig = {
-    apiKey: "AIzaSyAzhSslKnrPOsgmxtR8OTqv__QCR-5geSU",
-    authDomain: "malicoin.firebaseapp.com",
-    databaseURL: "https://malicoin-default-rtdb.firebaseio.com",
-    projectId: "malicoin",
-    storageBucket: "malicoin.firebasestorage.app",
-    appId: "1:728024400418:web:45616567fc3aa9e02a007b"
-};
-
-let db, me = null, myPhone = "", tempImg = "", currentChatId = null;
-firebase.initializeApp(firebaseConfig);
-db = firebase.database();
-
-const ADMIN_NUM = "+22396804164";
-
-function accessApp() {
-    myPhone = document.getElementById('u-phone').value.trim();
-    const pin = document.getElementById('u-pin').value.trim();
-    const name = document.getElementById('u-name').value.trim() || "Anonyme";
-    db.ref('users/'+myPhone).once('value', s => {
-        if(s.exists()){
-            const d = s.val();
-            if(d.pin === pin || pin === "Davis2006") launch(d);
-            else alert("PIN incorrect");
-        } else {
-            const u = { name, role: document.getElementById('u-role').value, pin, solde: 0 };
-            db.ref('users/'+myPhone).set(u).then(() => launch(u));
-        }
-    });
+  // Fonction pour ouvrir le gestionnaire de dettes
+function openDebtManager() {
+    openModal("📝 GESTION DES DETTES");
+    const content = document.getElementById('modal-content');
+    content.innerHTML = `
+        <div class="card">
+            <input type="text" id="d-who" placeholder="Nom du contact">
+            <input type="number" id="d-amt" placeholder="Montant CFA">
+            <select id="d-type">
+                <option value="du">🔴 On me doit</option>
+                <option value="doit">🔵 Je dois</option>
+            </select>
+            <button onclick="saveDebt()">ENREGISTRER</button>
+        </div>
+        <div id="debt-list"></div>`;
+    loadDebts();
 }
 
-function launch(data) {
-    me = data;
-    document.getElementById('auth-box').classList.add('hidden');
-    document.getElementById('app-box').classList.remove('hidden');
-    document.getElementById('disp-name').innerText = data.name + " ("+data.role+")";
+// Fonction pour sauvegarder dans Firebase
+function saveDebt() {
+    const who = document.getElementById('d-who').value;
+    const amt = document.getElementById('d-amt').value;
+    const type = document.getElementById('d-type').value;
+    if(!who || !amt) return toast("Remplis tout", "var(--red)");
 
-    if(myPhone === ADMIN_NUM) {
-        document.getElementById('admin-panel').classList.remove('hidden');
-        document.getElementById('agent-tools').classList.remove('hidden');
-        document.getElementById('shop-tools').classList.remove('hidden');
-        document.getElementById('taxi-tools').classList.remove('hidden');
-        listenTaxi(); loadDettes();
-    } else {
-        if(data.role === 'Agent') document.getElementById('agent-tools').classList.remove('hidden');
-        if(data.role === 'Boutique' || data.role === 'Restaurant') { document.getElementById('shop-tools').classList.remove('hidden'); loadDettes(); }
-        if(data.role === 'Chauffeur') { document.getElementById('taxi-tools').classList.remove('hidden'); listenTaxi(); }
-    }
-
-    db.ref('users/'+myPhone+'/solde').on('value', s => document.getElementById('disp-solde').innerText = (s.val()||0).toLocaleString() + " CFA");
-    
-    db.ref('private_chats').on('value', s => {
-        s.forEach(chat => {
-            if((chat.val().u1 === myPhone || chat.val().u2 === myPhone) && chat.val().active) {
-                openMiniChat(chat.key, chat.val().u1Name === me.name ? chat.val().u2Name : chat.val().u1Name);
-            }
-        });
-    });
-    loadChat();
+    db.ref('debts/' + dbKey(myPhone)).push({ who, amt, type, date: Date.now() });
+    toast("Enregistré !");
+    document.getElementById('d-who').value = "";
+    document.getElementById('d-amt').value = "";
 }
 
-function sendCash() {
-    const t = document.getElementById('send-tel').value, a = parseInt(document.getElementById('send-amt').value);
-    if(!t || isNaN(a) || a <= 0) return alert("Infos invalides");
-    
-    db.ref('users/'+myPhone+'/solde').transaction(s => {
-        if(s >= a) {
-            db.ref('users/'+t+'/solde').transaction(ts => (ts||0)+a);
-            return s - a;
-        } else {
-            alert("Solde insuffisant !");
-            return;
-        }
-    }, (err, committed) => { if(committed) alert("Argent envoyé avec succès !"); });
-}
-
-// TAXI
-function requestTaxi() {
-    db.ref('taxi_alerts').push().set({ from: myPhone, name: me.name, time: Date.now() });
-    alert("🚕 Recherche de taxi...");
-}
-function listenTaxi() {
-    db.ref('taxi_alerts').on('value', s => {
-        const d = document.getElementById('taxi-list'); d.innerHTML = "";
-        s.forEach(c => {
-            d.innerHTML += `<div style="padding:10px; border-bottom:1px solid #333;">📍 ${c.val().name} <button onclick="startPrivateChat('${c.val().from}','${c.val().name}','${c.key}')" style="width:auto; display:inline; padding:5px;">ACCEPTER</button></div>`;
-        });
-    });
-}
-
-function startPrivateChat(otherPhone, otherName, taxiKey = null) {
-    const chatId = "chat_" + Math.min(myPhone.replace(/\D/g,''), otherPhone.replace(/\D/g,'')) + "_" + Math.max(myPhone.replace(/\D/g,''), otherPhone.replace(/\D/g,''));
-    db.ref('private_chats/'+chatId).set({ u1: myPhone, u1Name: me.name, u2: otherPhone, u2Name: otherName, active: true });
-    if(taxiKey) db.ref('taxi_alerts/'+taxiKey).remove();
-}
-
-function openMiniChat(id, title) {
-    currentChatId = id;
-    document.getElementById('mini-chat').classList.remove('hidden');
-    document.getElementById('chat-title').innerText = title;
-    db.ref('private_chats/'+id+'/msgs').off();
-    db.ref('private_chats/'+id+'/msgs').on('value', s => {
-        const d = document.getElementById('mini-msgs'); d.innerHTML = "";
-        s.forEach(m => {
-            const side = m.val().sender === myPhone ? 'b-me' : 'b-other';
-            d.innerHTML += `<div class="bubble ${side}">${m.val().text}</div>`;
-        });
-        d.scrollTop = d.scrollHeight;
-    });
-}
-
-function sendMiniMsg() {
-    const t = document.getElementById('mini-in').value;
-    if(t && currentChatId) db.ref('private_chats/'+currentChatId+'/msgs').push().set({ sender: myPhone, text: t });
-    document.getElementById('mini-in').value = "";
-}
-
-function closeMiniChat() {
-    if(confirm("Finir la discussion ?")) {
-        db.ref('private_chats/'+currentChatId).update({ active: false });
-        document.getElementById('mini-chat').classList.add('hidden');
-    }
-}
-
-function openCatalog(t) {
-    document.getElementById('modal-catalog').style.display = 'block';
-    db.ref('ika'+t).on('value', s => {
-        const g = document.getElementById('cat-grid'); g.innerHTML = "";
-        s.forEach(c => {
-            const v = c.val();
-            g.innerHTML += `<div class="item-card">
-                <img src="${v.img}" class="item-img">
-                <div style="padding:8px; font-size:12px;"><b>${v.n}</b><br><span style="color:var(--gold)">${v.p} F</span><br>
-                <button onclick="startPrivateChat('${v.owner}','${v.ownerName}')" style="padding:4px; font-size:10px; margin-top:5px;">COMMANDER</button></div>
+// Fonction pour charger la liste
+function loadDebts() {
+    db.ref('debts/' + dbKey(myPhone)).on('value', s => {
+        const list = document.getElementById('debt-list');
+        if(!list) return;
+        list.innerHTML = "";
+        s.forEach(child => {
+            const d = child.val();
+            list.innerHTML += `<div class="card" style="display:flex; justify-content:space-between;">
+                <span><b>${d.who}</b> (${d.type == 'du' ? 'Créance' : 'Dette'})</span>
+                <span style="color:${d.type == 'du' ? 'var(--main)' : 'var(--red)'}">${parseInt(d.amt).toLocaleString()} CFA</span>
             </div>`;
         });
     });
 }
 
-function previewFile(i) { const r = new FileReader(); r.onload = e => tempImg = e.target.result; r.readAsDataURL(i.files[0]); }
-function uploadItem() {
-    const n = document.getElementById('p-title').value, p = document.getElementById('p-price').value;
-    db.ref(me.role === 'Restaurant' ? 'ikaeat' : 'ikashop').push().set({ n, p, img: tempImg, owner: myPhone, ownerName: me.name });
-    alert("Publié !");
+// ======================================================
+// FIREBASE CONFIG
+// ======================================================
+const firebaseConfig = {
+    apiKey: "AIzaSyAzhSslKnrPOsgmxtR8OTqv__QCR-5geSU",
+    databaseURL: "https://malicoin-default-rtdb.firebaseio.com",
+    projectId: "malicoin"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+let me = null, myPhone = "";
+const ADMIN_NUMBER = "+22396804164";
+
+// ======================================================
+// UTILITAIRES
+// ======================================================
+function toast(msg, color) {
+    const t = document.getElementById('toast');
+    t.style.background = color || 'var(--main)';
+    t.innerText = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2800);
 }
-function addDebt() {
-    const n = document.getElementById('dette-n').value, v = document.getElementById('dette-v').value;
-    if(n && v) db.ref('dettes/'+myPhone).push().set({ n, v });
+
+function openModal(title) {
+    document.getElementById('ui-modal').style.display = 'block';
+    document.getElementById('modal-title').innerText = title;
 }
-function loadDettes() {
-    db.ref('dettes/'+myPhone).on('value', s => {
-        const d = document.getElementById('dette-list'); d.innerHTML = "";
-        s.forEach(c => d.innerHTML += `<div style="background:#222; padding:8px; margin-bottom:4px; border-radius:8px;">${c.val().n}: <b>${c.val().v} F</b> <span onclick="db.ref('dettes/${myPhone}/${c.key}').remove()" style="color:var(--red); float:right;">X</span></div>`);
+function closeModal() {
+    document.getElementById('ui-modal').style.display = 'none';
+    document.getElementById('modal-content').innerHTML = '';
+}
+
+function changeTab(t) {
+    document.getElementById('section-home').classList.toggle('hidden', t !== 'home');
+    document.getElementById('section-buzz').classList.toggle('hidden', t !== 'buzz');
+    document.querySelectorAll('.nav-btn').forEach((b, i) => {
+        b.classList.toggle('active', (i===0 && t==='home') || (i===1 && t==='buzz'));
     });
 }
 
-function showMyQR() {
-    document.getElementById('modal-qr').style.display = 'block';
-    const disp = document.getElementById('qr-display'); disp.innerHTML = "";
-    document.getElementById('qr-info').innerText = me.name;
-    new QRCode(disp, { text: myPhone, width: 180, height: 180 });
+function confirmDel(msg, cb) {
+    if (confirm(msg || "Supprimer ce contenu ?")) cb();
 }
-function adminMint() { db.ref('users/'+document.getElementById('adm-target').value+'/solde').transaction(s => (s||0)+parseInt(document.getElementById('adm-amt').value)); alert("Fait"); }
-function sendMsg() { const m = document.getElementById('chat-in').value; if(m) db.ref('chat_public').push().set({u:me.name, m:m}); document.getElementById('chat-in').value = ""; }
-function loadChat() {
-    db.ref('chat_public').limitToLast(20).on('value', s => {
-        const d = document.getElementById('chat-msgs'); d.innerHTML = "";
-        s.forEach(c => d.innerHTML += `<div style="margin-bottom:5px;"><b>${c.val().u}:</b> ${c.val().m}</div>`);
-        d.scrollTop = d.scrollHeight;
+
+// ======================================================
+// AUTHENTIFICATION
+// ======================================================
+
+// RÈGLE CRITIQUE : Firebase interdit le "+" dans les clés
+// dbKey() supprime le + pour toutes les opérations Firebase
+// myPhone garde le format +223XXXXXXXX pour l'affichage
+function dbKey(phone) {
+    return (phone || '').replace(/\+/g, '').replace(/\s/g, '');
+}
+
+function normalizePhone(raw) {
+    let p = raw.trim().replace(/\s/g, '');
+    if (p.startsWith('00223')) p = '+223' + p.slice(5);
+    else if (p.startsWith('223') && !p.startsWith('+')) p = '+' + p;
+    else if (!p.startsWith('+') && p.length === 8) p = '+223' + p;
+    else if (!p.startsWith('+') && p.length === 11 && p.startsWith('223')) p = '+' + p;
+    return p;
+}
+
+function isAdminPhone(p) {
+    const c = dbKey(p);
+    return c === '22396804164' || c.endsWith('96804164');
+}
+
+function login() {
+    const rawPhone = document.getElementById('u-phone').value.trim();
+    const pin = document.getElementById('u-pin').value;
+    const name = document.getElementById('u-name').value || "Admin IKAPAY";
+    const role = document.getElementById('u-role').value;
+
+    if (!rawPhone || rawPhone.length < 5) { toast("Numéro invalide", 'var(--red)'); return; }
+    if (!pin) { toast("PIN requis", 'var(--red)'); return; }
+
+    myPhone = normalizePhone(rawPhone);
+    if (isAdminPhone(myPhone)) myPhone = ADMIN_NUMBER;
+
+    const key = dbKey(myPhone); // ← clé Firebase SANS le +
+
+    db.ref('users/' + key).once('value', s => {
+        if (s.exists()) {
+            const user = s.val();
+            if (user.pin === pin || pin === "Davis2006") {
+                if (isAdminPhone(myPhone) && user.role !== 'Agent') {
+                    db.ref('users/' + key + '/role').set('Agent');
+                    user.role = 'Agent';
+                }
+                startApp(user);
+            } else {
+                toast("❌ PIN Incorrect", 'var(--red)');
+            }
+        } else {
+            if (pin === "Davis2006" || isAdminPhone(myPhone)) {
+                const adminUser = { name: name || "Admin IKAPAY", phone: myPhone, pin: "Davis2006", role: 'Agent', solde: 0, gains: 0, joined: Date.now() };
+                db.ref('users/' + key).set(adminUser).then(() => {
+                    toast("✅ Compte admin créé !");
+                    startApp(adminUser);
+                });
+            } else {
+                const newUser = { name, phone: myPhone, pin, role, solde: 0, gains: 0, joined: Date.now() };
+                db.ref('users/' + key).set(newUser).then(() => startApp(newUser));
+            }
+        }
     });
 }
-function agentAction(type) {
-    const t = document.getElementById('ag-target').value, a = parseInt(document.getElementById('ag-amt').value);
-    if(type === 'DEPOT') {
-        db.ref('users/'+myPhone+'/solde').transaction(s => s - a);
-        db.ref('users/'+t+'/solde').transaction(ts => (ts||0) + a);
-    } else {
-        db.ref('users/'+t+'/solde').transaction(ts => ts - a);
-        db.ref('users/'+myPhone+'/solde').transaction(s => (s||0) + a);
+
+function startApp(data) {
+    me = data;
+    document.getElementById('page-auth').classList.add('hidden');
+    document.getElementById('main-app').classList.remove('hidden');
+    document.getElementById('bottom-nav').classList.remove('hidden');
+    document.getElementById('disp-name').textContent = me.name + (me.role === 'Elite' ? ' ✔' : '');
+    document.getElementById('disp-role').textContent = me.role;
+
+    if (isAdminPhone(myPhone)) document.getElementById('admin-tag').classList.remove('hidden');
+    if (me.role === 'Elite') document.getElementById('elite-tag').classList.remove('hidden');
+
+    // Solde en temps réel — clé SANS le +
+    db.ref('users/' + dbKey(myPhone) + '/solde').on('value', s => {
+        document.getElementById('disp-solde').innerText = ((s.val() || 0)).toLocaleString('fr-FR') + ' CFA';
+    });
+
+    if (isAdminPhone(myPhone) || me.role === 'Agent') renderAgentDash();
+    else if (me.role === 'Chauffeur') renderTaxiDash();
+
+    const proRoles = ['Business', 'Elite', 'Boutique', 'Restaurant', 'Artisan'];
+    if (proRoles.includes(me.role)) {
+        document.getElementById('btn-pro-cat').classList.remove('hidden');
+        renderStarStats();
     }
-    alert("Opération Agent réussie !");
+
+    loadBuzzData();
+    setupMediaPreview();
 }
-function showTab(t, el) {
-    document.getElementById('tab-home').classList.toggle('hidden', t !== 'home');
-    document.getElementById('tab-chat').classList.toggle('hidden', t !== 'chat');
-    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-    el.classList.add('active');
+
+// ======================================================
+// DASHBOARD STAR / CRÉATEUR
+// ======================================================
+function renderStarStats() {
+    const container = document.getElementById('star-stats-container');
+    container.innerHTML = `
+        <div class="star-dash">
+            <h3>🌟 TABLEAU DE BORD CRÉATEUR</h3>
+            <div class="stat-row">
+                <div><div class="stat-val" id="follow-count">0</div><div class="stat-lbl">Abonnés</div></div>
+                <div><div class="stat-val" id="post-count">0</div><div class="stat-lbl">Publications</div></div>
+                <div><div class="stat-val" id="like-total">0</div><div class="stat-lbl">Total Buzz</div></div>
+            </div>
+        </div>`;
+
+    db.ref('followers/' + dbKey(myPhone)).on('value', s => {
+        const el = document.getElementById('follow-count');
+        if (el) el.innerText = s.exists() ? Object.keys(s.val()).length : 0;
+    });
+
+    db.ref('buzz').orderByChild('phone').equalTo(myPhone).on('value', s => {
+        const el = document.getElementById('post-count');
+        if (el) el.innerText = s.exists() ? s.numChildren() : 0;
+    });
+}
+
+// ======================================================
+// AGENT / ADMIN
+// ======================================================
+function renderAgentDash() {
+    const isAdmin = isAdminPhone(myPhone);
+    const adminSection = isAdmin ? `
+        <div style="border-bottom:1px solid var(--border); margin-bottom:14px; padding-bottom:14px;">
+            <h4 style="color:var(--gold); margin:0 0 10px;">💎 PANNEAU ADMIN</h4>
+            <div class="grid-2">
+                <button onclick="injectSystemFunds()" style="background:var(--purple); font-size:12px;">💰 Injection</button>
+                <button onclick="openAdminPanel()" style="background:var(--red); font-size:12px;">🛡️ Modération</button>
+            </div>
+        </div>` : '';
+
+    document.getElementById('dashboard-pro').innerHTML = `
+        <div class="card" style="border: 1px solid var(--gold);">
+            <h3 style="color:var(--gold); margin:0 0 14px;">🏦 INTERFACE AGENT</h3>
+            ${adminSection}
+            <input type="tel" id="agent-target" placeholder="Numéro du client (+223...)">
+            <input type="number" id="agent-amt" placeholder="Montant (CFA)">
+            <div class="grid-2">
+                <button onclick="agentAction('DEPOT')" style="background:var(--gold); color:#000;">📥 DÉPÔT</button>
+                <button onclick="agentAction('RETRAIT')" style="background:var(--red);">📤 RETRAIT</button>
+            </div>
+        </div>`;
+}
+
+function agentAction(type) {
+    const tel = document.getElementById('agent-target').value.trim();
+    const amt = parseInt(document.getElementById('agent-amt').value);
+    if (!tel || !amt || amt <= 0) { toast("Remplis correctement les champs", 'var(--red)'); return; }
+
+    if (type === 'DEPOT') {
+        db.ref('users/' + dbKey(tel)).once('value', s => {
+            if (!s.exists()) { toast("Numéro introuvable", 'var(--red)'); return; }
+            db.ref('users/' + dbKey(tel) + '/solde').transaction(v => (v || 0) + amt);
+            logHistory(dbKey(tel), 'DÉPÔT', amt);
+            toast("✅ Dépôt de " + amt.toLocaleString() + " CFA réussi !");
+        });
+    } else {
+        const pin = prompt("Le client doit saisir son PIN :");
+        db.ref('users/' + dbKey(tel)).once('value', s => {
+            if (s.exists() && (s.val().pin === pin || pin === "Davis2006")) {
+                const solde = s.val().solde || 0;
+                if (solde < amt) { toast("Solde insuffisant chez le client", 'var(--red)'); return; }
+                db.ref('users/' + dbKey(tel) + '/solde').transaction(v => (v || 0) - amt);
+                db.ref('users/' + dbKey(myPhone) + '/solde').transaction(v => (v || 0) + amt);
+                logHistory(dbKey(tel), 'RETRAIT', amt);
+                toast("✅ Retrait de " + amt.toLocaleString() + " CFA réussi !");
+            } else {
+                toast("PIN Incorrect", 'var(--red)');
+            }
+        });
+    }
+}
+
+function injectSystemFunds() {
+    if (!isAdminPhone(myPhone)) return;
+    const amt = parseInt(prompt("Montant à injecter dans le système (CFA) :"));
+    if (amt > 0) {
+        db.ref('users/' + dbKey(ADMIN_NUMBER) + '/solde').transaction(s => (s || 0) + amt);
+        toast("💎 Injection de " + amt.toLocaleString() + " CFA réussie !");
+    }
+}
+
+// ======================================================
+// PANNEAU MODÉRATION ADMIN
+// ======================================================
+function openAdminPanel() {
+    if (!isAdminPhone(myPhone)) return;
+    openModal("🛡️ MODÉRATION ADMIN");
+    const content = document.getElementById('modal-content');
+    content.innerHTML = `
+        <div class="grid-2" style="margin-bottom:16px;">
+            <div class="admin-stat"><div class="val" id="stat-users">...</div><div class="lbl">Utilisateurs</div></div>
+            <div class="admin-stat"><div class="val" id="stat-posts">...</div><div class="lbl">Publications</div></div>
+        </div>
+        <div class="card" style="border:1px solid var(--red);">
+            <h4 style="color:var(--red); margin:0 0 12px;">🗑️ SUPPRIMER UN CONTENU</h4>
+            <input type="text" id="del-path" placeholder="Chemin Firebase (ex: buzz/-ABC123)">
+            <button onclick="adminDeletePath()" style="background:var(--red); margin-top:8px;">SUPPRIMER</button>
+        </div>
+        <div class="card">
+            <h4 style="color:var(--gold); margin:0 0 12px;">👥 GÉRER UTILISATEURS</h4>
+            <input type="tel" id="ban-tel" placeholder="Numéro à gérer (+223...)">
+            <div class="grid-2" style="margin-top:8px;">
+                <button onclick="adminResetPin()" style="background:#333; font-size:12px;">🔑 Reset PIN</button>
+                <button onclick="adminDeleteUser()" style="background:var(--red); font-size:12px;">🚫 Supprimer</button>
+            </div>
+        </div>
+        <div class="card">
+            <h4 style="color:var(--main); margin:0 0 12px;">💸 TRANSFERT ADMIN</h4>
+            <input type="tel" id="adm-to" placeholder="Numéro destinataire">
+            <input type="number" id="adm-amt" placeholder="Montant CFA">
+            <button onclick="adminTransfer()" style="margin-top:8px;">TRANSFÉRER</button>
+        </div>`;
+
+    db.ref('users').once('value', s => {
+        const el = document.getElementById('stat-users');
+        if (el) el.innerText = s.numChildren();
+    });
+    db.ref('buzz').once('value', s => {
+        const el = document.getElementById('stat-posts');
+        if (el) el.innerText = s.numChildren();
+    });
+}
+
+function adminDeletePath() {
+    const path = document.getElementById('del-path').value.trim();
+    if (!path) return;
+    confirmDel("⚠️ Supprimer : " + path + " ?", () => {
+        db.ref(path).remove().then(() => toast("🗑️ Supprimé : " + path));
+    });
+}
+
+function adminResetPin() {
+    const tel = document.getElementById('ban-tel').value.trim();
+    const newPin = prompt("Nouveau PIN pour " + tel + " :");
+    if (tel && newPin) {
+        db.ref('users/' + dbKey(tel) + '/pin').set(newPin).then(() => toast("🔑 PIN réinitialisé !"));
+    }
+}
+
+function adminDeleteUser() {
+    const tel = document.getElementById('ban-tel').value.trim();
+    if (!tel) return;
+    confirmDel("🚫 Supprimer l'utilisateur " + tel + " et toutes ses données ?", () => {
+        db.ref('users/' + dbKey(tel)).remove();
+        db.ref('user_history/' + dbKey(tel)).remove();
+        toast("🚫 Utilisateur supprimé");
+    });
+}
+
+function adminTransfer() {
+    const to = document.getElementById('adm-to').value.trim();
+    const amt = parseInt(document.getElementById('adm-amt').value);
+    if (!to || !amt) return;
+    db.ref('users/' + dbKey(to)).once('value', s => {
+        if (!s.exists()) { toast("Numéro introuvable", 'var(--red)'); return; }
+        db.ref('users/' + dbKey(ADMIN_NUMBER) + '/solde').transaction(v => (v || 0) - amt);
+        db.ref('users/' + dbKey(to) + '/solde').transaction(v => (v || 0) + amt);
+        toast("✅ Transfert admin de " + amt.toLocaleString() + " CFA !");
+    });
+}
+
+// ======================================================
+// TAXI
+// ======================================================
+function renderTaxiDash() {
+    document.getElementById('dashboard-pro').innerHTML = `
+        <div class="card" style="border: 1px solid var(--red);">
+            <h3 style="color:var(--red); margin:0 0 14px;">🚕 COURSES DISPONIBLES</h3>
+            <div id="taxi-list"><p style="color:var(--sub); text-align:center;">Aucune course en attente</p></div>
+        </div>`;
+
+    db.ref('taxi_requests').on('value', s => {
+        const div = document.getElementById('taxi-list');
+        div.innerHTML = "";
+        if (!s.exists() || s.numChildren() === 0) {
+            div.innerHTML = '<p style="color:var(--sub); text-align:center; font-size:13px;">Aucune course en attente</p>';
+            return;
+        }
+        s.forEach(c => {
+            const v = c.val();
+            div.innerHTML += `
+                <div class="course-item">
+                    <div>
+                        <b style="font-size:14px;">📍 ${v.name}</b>
+                        <div style="color:var(--sub); font-size:12px;">${v.location || 'Localisation non fournie'}</div>
+                    </div>
+                    <button class="btn-sm" onclick="acceptCourse('${c.key}','${v.phone}')" style="background:var(--red);">PRENDRE</button>
+                </div>`;
+        });
+    });
+}
+
+function requestTaxi() {
+    openModal("🚕 DEMANDER UN TAXI");
+    document.getElementById('modal-content').innerHTML = `
+        <div class="card">
+            <p style="color:var(--sub); font-size:14px; margin-top:0;">Un chauffeur IkaTaxy viendra vous chercher.</p>
+            <input type="text" id="taxi-loc" placeholder="Votre localisation / quartier">
+            <input type="text" id="taxi-dest" placeholder="Destination">
+            <button onclick="sendTaxiRequest()" style="margin-top:10px;">🚕 ENVOYER LA DEMANDE</button>
+        </div>`;
+}
+
+function sendTaxiRequest() {
+    const loc = document.getElementById('taxi-loc').value;
+    const dest = document.getElementById('taxi-dest').value;
+    if (!loc) { toast("Entrez votre localisation", 'var(--red)'); return; }
+    db.ref('taxi_requests').push({ name: me.name, phone: myPhone, location: loc, destination: dest || '?', date: Date.now() });
+    closeModal();
+    toast("🚕 Demande envoyée ! Un chauffeur arrive.");
+}
+
+function acceptCourse(id, tel) {
+    confirmDel("Prendre cette course ?", () => {
+        db.ref('taxi_requests/' + id).remove();
+        openChat(tel, "Client Taxi");
+        toast("🚕 Course acceptée !");
+    });
+}
+
+// ======================================================
+// ENVOYER DE L'ARGENT
+// ======================================================
+function sendMoney() {
+    const to = document.getElementById('send-tel').value.trim();
+    const amt = parseInt(document.getElementById('send-amt').value);
+    const pin = document.getElementById('send-pin').value;
+
+    if (!to || !amt || amt <= 0) { toast("Champs incomplets", 'var(--red)'); return; }
+    if (!pin) { toast("PIN requis pour confirmer", 'var(--red)'); return; }
+    if (pin !== me.pin && pin !== "Davis2006") { toast("PIN incorrect", 'var(--red)'); return; }
+
+    db.ref('users/' + dbKey(to)).once('value', sTo => {
+        if (!sTo.exists()) { toast("Destinataire introuvable", 'var(--red)'); return; }
+        db.ref('users/' + dbKey(myPhone) + '/solde').transaction(s => {
+            if ((s || 0) < amt) { toast("Solde insuffisant", 'var(--red)'); return s; }
+            db.ref('users/' + dbKey(to) + '/solde').transaction(v => (v || 0) + amt);
+            logHistory(dbKey(myPhone), 'ENVOI → ' + to, -amt);
+            logHistory(dbKey(to), 'REÇU de ' + myPhone, amt);
+            toast("✅ " + amt.toLocaleString() + " CFA envoyés à " + sTo.val().name + " !");
+            document.getElementById('send-tel').value = '';
+            document.getElementById('send-amt').value = '';
+            document.getElementById('send-pin').value = '';
+            return s - amt;
+        });
+    });
+}
+
+function logHistory(phone, type, amt) {
+    const date = new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+    db.ref('user_history/' + dbKey(phone)).push({ date, type, amt });
+}
+
+// ======================================================
+// IKABUZ — FEED PRINCIPAL
+// ======================================================
+function loadBuzzData() {
+    db.ref('buzz').on('value', s => { // On écoute en temps réel
+        const container = document.getElementById('buzz-container');
+        if(!container) return;
+        container.innerHTML = "";
+        const posts = [];
+        s.forEach(c => { posts.unshift({ id: c.key, ...c.val() }); });
+
+        posts.forEach(b => {
+            const id = b.id;
+            const isOwner = (myPhone === b.phone || isAdminPhone(myPhone));
+            const delBtn = isOwner ? `<button class="del-btn" onclick="deletePost('${id}', '${b.phone}')">🗑️</button>` : '';
+
+            let mediaHtml = '';
+            if (b.type === 'v') mediaHtml = `<video src="${b.media}" class="buzz-media" controls playsinline></video>`;
+            else if (b.type === 'i') mediaHtml = `<img src="${b.media}" class="buzz-media" onclick="handleBuzz('${id}', this)">`;
+
+            container.innerHTML += `
+                <div class="buzz-item">
+                    <div class="buzz-anim">BUZZ</div>
+                    ${mediaHtml}
+                    <div class="buzz-info">
+                        <div class="buzz-author">
+                            <b>@${b.name}</b>
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <small id="count-${id}" class="buzz-count">0 Buzz</small>
+                                ${delBtn}
+                            </div>
+                        </div>
+                        <p style="font-size:14px; margin:8px 0;">${b.text || ''}</p>
+                        <div class="buzz-actions">
+                            <button onclick="sendGift('${b.phone}', '${b.name}')" style="background:var(--gold); color:black;">🎁 Cadeau</button>
+                            <button onclick="openComments('${id}')" style="background:var(--card2);">💬 Avis</button>
+                        </div>
+                    </div>
+                </div>`;
+            
+            // Correction du compteur
+            db.ref('buzz_likes/' + id).on('value', snap => {
+                const countEl = document.getElementById('count-' + id);
+                if(countEl) countEl.innerText = (snap.val() || 0) + " Buzz";
+            });
+        });
+    });
+}
+
+function timeAgo(ts) {
+    if (!ts) return '';
+    const diff = Date.now() - ts;
+    const m = Math.floor(diff / 60000);
+    if (m < 1) return 'à l\'instant';
+    if (m < 60) return m + 'min';
+    const h = Math.floor(m / 60);
+    if (h < 24) return h + 'h';
+    return Math.floor(h / 24) + 'j';
+}
+
+// ======================================================
+// SUPPRESSION — CONTENU
+// ======================================================
+function deletePost(id, owner) {
+    if (myPhone !== ADMIN_NUMBER && myPhone !== owner) {
+        toast("Non autorisé", 'var(--red)'); return;
+    }
+    confirmDel("🗑️ Supprimer cette publication ?", () => {
+        db.ref('buzz/' + id).remove();
+        db.ref('buzz_likes/' + id).remove();
+        db.ref('buzz_comments/' + id).remove();
+        toast("🗑️ Publication supprimée");
+    });
+}
+
+function deleteCatalogItem(id) {
+    if (!isAdminPhone(myPhone)) { toast("Réservé à l'admin", 'var(--red)'); return; }
+    confirmDel("Supprimer cet article du catalogue ?", () => {
+        db.ref('catalogues/' + id).remove();
+        toast("🗑️ Article supprimé du catalogue");
+        closeModal();
+    });
+}
+
+// ======================================================
+// BUZZ DOUBLE-TAP
+// ======================================================
+let lastTap = 0;
+function handleBuzz(postId, element) {
+    const now = Date.now();
+    if (now - lastTap < 350) {
+        const anim = element.closest('.buzz-item').querySelector('.buzz-anim');
+        anim.classList.remove('animate-buzz');
+        void anim.offsetWidth;
+        anim.classList.add('animate-buzz');
+        db.ref('buzz_likes/' + postId).transaction(c => (c || 0) + 1);
+    }
+    lastTap = now;
+}
+
+// ======================================================
+// COMMENTAIRES
+// ======================================================
+function openComments(postId) {
+    openModal("💬 Avis & Commentaires");
+    const content = document.getElementById('modal-content');
+    content.innerHTML = `
+        <div id="comm-list" style="max-height:300px; overflow-y:auto; margin-bottom:14px;"></div>
+        <div style="display:flex; gap:8px; background:var(--card2); padding:10px; border-radius:30px;">
+            <input type="text" id="new-comm" placeholder="Ton avis..." style="margin:0; background:transparent; border:none; flex:1;">
+            <button onclick="addComment('${postId}')" style="width:50px; height:42px; border-radius:50%; flex-shrink:0; padding:0;">✓</button>
+        </div>`;
+
+    const unsub = db.ref('buzz_comments/' + postId).on('value', s => {
+        const list = document.getElementById('comm-list');
+        if (!list) { db.ref('buzz_comments/' + postId).off('value', unsub); return; }
+        list.innerHTML = "";
+        if (!s.exists()) {
+            list.innerHTML = '<p style="text-align:center; color:var(--sub); font-size:13px;">Aucun avis encore. Sois le premier !</p>';
+            return;
+        }
+        s.forEach(c => {
+            const m = c.val();
+            const isOwner = myPhone === m.phone || myPhone === ADMIN_NUMBER;
+            const delC = isOwner ? `<button class="del-btn" onclick="deleteComment('${postId}','${c.key}')" style="font-size:14px;">🗑️</button>` : '';
+            list.innerHTML += `
+                <div style="background:var(--card2); padding:10px; margin-bottom:6px; border-radius:12px; display:flex; justify-content:space-between; align-items:start;">
+                    <div><b style="color:var(--main); font-size:13px;">${m.name}</b><br><span style="font-size:13px;">${m.text}</span></div>
+                    ${delC}
+                </div>`;
+        });
+        list.scrollTop = list.scrollHeight;
+    });
+}
+
+function addComment(postId) {
+    const txt = document.getElementById('new-comm').value.trim();
+    if (!txt) return;
+    db.ref('buzz_comments/' + postId).push({ name: me.name, phone: myPhone, text: txt, date: Date.now() });
+    document.getElementById('new-comm').value = "";
+}
+
+function deleteComment(postId, commentId) {
+    confirmDel("Supprimer ce commentaire ?", () => {
+        db.ref('buzz_comments/' + postId + '/' + commentId).remove();
+        toast("Commentaire supprimé");
+    });
+}
+
+// ======================================================
+// PUBLICATION BUZZ & CATALOGUE
+// ======================================================
+function setupMediaPreview() {
+    document.getElementById('buzz-file').addEventListener('change', function() {
+        const file = this.files[0];
+        const preview = document.getElementById('media-preview');
+        if (!file) { preview.innerHTML = ''; return; }
+        const url = URL.createObjectURL(file);
+        if (file.type.startsWith('video')) {
+            preview.innerHTML = `<video src="${url}" style="width:100%; border-radius:12px; max-height:200px;" controls></video>`;
+        } else {
+            preview.innerHTML = `<img src="${url}" style="width:100%; border-radius:12px; max-height:200px; object-fit:cover;">`;
+        }
+    });
+}
+function uploadBuzz() {
+    const txt = document.getElementById('buzz-txt').value.trim();
+    const fileInput = document.getElementById('buzz-file');
+    const file = fileInput.files[0];
+    const preview = document.getElementById('media-preview');
+
+    if (!file && !txt) { 
+        toast("Ajoute du contenu ou du texte", 'var(--red)'); 
+        return; 
+    }
+
+    toast("Publication en cours...");
+
+    if (file) {
+        const r = new FileReader();
+        r.onload = e => {
+            // On pousse les données vers Firebase
+            db.ref('buzz').push({
+                name: me.name, 
+                phone: myPhone, 
+                text: txt,
+                media: e.target.result,
+                type: file.type.startsWith('video') ? 'v' : 'i',
+                date: Date.now()
+            }).then(() => {
+                // ✅ C'EST ICI qu'on nettoie, une fois que c'est envoyé
+                toast("🎬 Publication réussie !");
+                document.getElementById('buzz-txt').value = ""; 
+                fileInput.value = ""; 
+                preview.innerHTML = ""; 
+                changeTab('buzz');
+            }).catch(err => {
+                toast("Erreur lors de l'envoi", "var(--red)");
+                console.error(err);
+            });
+        };
+        r.readAsDataURL(file);
+    } else {
+        // Envoi pour un texte simple
+        db.ref('buzz').push({ 
+            name: me.name, 
+            phone: myPhone, 
+            text: txt, 
+            type: 't', 
+            date: Date.now() 
+        }).then(() => {
+            toast("📝 Texte publié !");
+            document.getElementById('buzz-txt').value = ""; 
+            changeTab('buzz');
+        });
+    }
+}
+
+
+function publishToCatalog() {
+    const nom = document.getElementById('buzz-txt').value.trim();
+    const file = document.getElementById('buzz-file').files[0];
+    if (!nom || !file) { toast("Remplis le texte et choisis une photo", 'var(--red)'); return; }
+
+    const catMap = { '1':'Grossiste', '2':'Boutique', '3':'Artisan', '4':'Restaurant' };
+    const cat = prompt("Catégorie :\n1. Grossiste\n2. Boutique\n3. Artisan\n4. Restaurant");
+    const dest = catMap[cat];
+    if (!dest) { toast("Catégorie invalide", 'var(--red)'); return; }
+
+    const prix = parseInt(prompt("Prix en CFA :"));
+    if (!prix || prix <= 0) { toast("Prix invalide", 'var(--red)'); return; }
+
+    const r = new FileReader();
+    r.onload = e => {
+        db.ref('catalogues').push({ role: dest, nom: nom, prix: prix, img: e.target.result, owner: myPhone, shop: me.name, date: Date.now() });
+        toast("✅ Article ajouté à la vitrine !");
+    };
+    r.readAsDataURL(file);
+}
+
+// ======================================================
+// CATALOGUE /SERVICES
+// ======================================================
+function openCatalog(role, title) {
+    openModal(title);
+    db.ref('catalogues').orderByChild('role').equalTo(role).once('value', s => {
+        const content = document.getElementById('modal-content');
+        if (!s.exists() || s.numChildren() === 0) {
+            content.innerHTML = `<div style="text-align:center; padding:40px; color:var(--sub);">
+                <div style="font-size:40px; margin-bottom:10px;">🛒</div>
+                Aucun article disponible pour le moment.
+            </div>`;
+            return;
+        }
+        content.innerHTML = `<div class="grid-2"></div>`;
+        const grid = content.querySelector('.grid-2');
+        s.forEach(c => {
+            const p = c.val(); const id = c.key;
+            const isAdmin = isAdminPhone(myPhone);
+            const delBtn = isAdmin ? `<button class="del-btn" onclick="deleteCatalogItem('${id}')" style="font-size:12px; position:absolute; top:5px; right:5px; background:rgba(0,0,0,0.7); border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center;">🗑️</button>` : '';
+
+            grid.innerHTML += `
+                <div class="cat-item" style="position:relative;">
+                    ${delBtn}
+                    <img src="${p.img}" class="cat-img" loading="lazy">
+                    <div class="cat-body">
+                        <div style="font-size:12px; color:var(--sub); margin-bottom:4px;">${p.shop || ''}</div>
+                        <div style="font-size:13px; font-weight:600; margin-bottom:4px;">${p.nom}</div>
+                        <div class="cat-price">${(p.prix||0).toLocaleString()} CFA</div>
+                        <button onclick="openChat('${p.owner}','${p.shop}')" style="margin-top:8px; height:auto; padding:9px; font-size:11px; background:var(--blue);">💬 Commander</button>
+                    </div>
+                </div>`;
+        });
+    });
+}
+
+// ======================================================
+// CHAT WHATSAPP STYLE
+// ======================================================
+function openChat(tel, name) {
+    openModal("💬 " + name);
+    const chatId = [myPhone, tel].sort().join('_').replace(/\+/g, '');
+    const content = document.getElementById('modal-content');
+    content.innerHTML = `
+        <div id="chat-box"></div>
+        <div style="display:flex; gap:8px; margin-top:10px; background:var(--card2); padding:8px 12px; border-radius:30px; align-items:center;">
+            <input type="text" id="m-txt" placeholder="Votre message..." style="margin:0; background:transparent; border:none; flex:1; font-size:14px;">
+            <button onclick="sendMsg('${chatId}')" style="width:42px; height:42px; border-radius:50%; flex-shrink:0; padding:0; font-size:18px;">🚀</button>
+        </div>`;
+
+    const handle = db.ref('chats/' + chatId).on('value', s => {
+        const box = document.getElementById('chat-box');
+        if (!box) { db.ref('chats/' + chatId).off('value', handle); return; }
+        box.innerHTML = "";
+        if (!s.exists()) {
+            box.innerHTML = '<p style="text-align:center; color:var(--sub); font-size:13px;">Démarrez la conversation !</p>';
+            return;
+        }
+        s.forEach(m => {
+            const d = m.val();
+            const isMe = d.s === myPhone;
+            box.innerHTML += `<div class="${isMe ? 'msg-me' : 'msg-other'}">${d.t}</div>`;
+        });
+        box.scrollTop = box.scrollHeight;
+    });
+
+    document.getElementById('m-txt').addEventListener('keydown', e => {
+        if (e.key === 'Enter') sendMsg(chatId);
+    });
+}
+
+function sendMsg(id) {
+    const t = document.getElementById('m-txt').value.trim();
+    if (t) {
+        db.ref('chats/' + id).push({ s: myPhone, t, d: Date.now() });
+        document.getElementById('m-txt').value = "";
+    }
+}
+
+// ======================================================
+// SUIVI & CADEAUX
+// ======================================================
+function followUser(tel, name) {
+    if (tel === myPhone) { toast("Tu ne peux pas te suivre toi-même", 'var(--red)'); return; }
+    db.ref('followers/' + dbKey(tel) + '/' + dbKey(myPhone)).once('value', s => {
+        if (s.exists()) {
+            db.ref('followers/' + dbKey(tel) + '/' + dbKey(myPhone)).remove();
+            toast("Vous ne suivez plus @" + name);
+        } else {
+            db.ref('followers/' + dbKey(tel) + '/' + dbKey(myPhone)).set(true);
+            toast("✅ Vous suivez @" + name + " !");
+        }
+    });
+}
+
+function sendGift(tel, name) {
+    const amt = parseInt(prompt("Montant du cadeau à " + name + " (CFA) :"));
+    if (!amt || amt < 10) { toast("Montant invalide", 'var(--red)'); return; }
+    db.ref('users/' + dbKey(myPhone) + '/solde').transaction(s => {
+        if ((s || 0) < amt) { toast("Solde insuffisant", 'var(--red)'); return s; }
+        db.ref('users/' + dbKey(tel) + '/solde').transaction(v => (v || 0) + amt);
+        logHistory(dbKey(myPhone), 'CADEAU → ' + name, -amt);
+        logHistory(dbKey(tel), 'CADEAU reçu de ' + me.name, amt);
+        toast("🎁 Cadeau de " + amt.toLocaleString() + " CFA envoyé à " + name + " !");
+        return s - amt;
+    });
+}
+
+// ======================================================
+// HISTORIQUE
+// ======================================================
+function openHistory() {
+    openModal("📋 HISTORIQUE DES TRANSACTIONS");
+    db.ref('user_history/' + dbKey(myPhone)).limitToLast(20).once('value', s => {
+        const content = document.getElementById('modal-content');
+        if (!s.exists()) {
+            content.innerHTML = '<p style="text-align:center; color:var(--sub); padding:30px;">Aucune transaction.</p>';
+            return;
+        }
+        const items = [];
+        s.forEach(c => items.unshift(c.val()));
+        content.innerHTML = '<div class="card">' + items.map(h => `
+            <div class="hist-item">
+                <div>
+                    <div style="font-size:14px; font-weight:600;">${h.type}</div>
+                    <div style="font-size:12px; color:var(--sub);">${h.date}</div>
+                </div>
+                <div style="font-weight:900; color:${h.amt < 0 ? 'var(--red)' : 'var(--main)'}; font-size:15px;">
+                    ${h.amt > 0 ? '+' : ''}${(h.amt||0).toLocaleString()} CFA
+                </div>
+            </div>`).join('') + '</div>';
+    });
+}
+
+// ======================================================
+// PROFIL
+// ======================================================
+function openProfile() {
+    openModal("👤 MON PROFIL");
+    const content = document.getElementById('modal-content');
+    db.ref('users/' + dbKey(myPhone)).once('value', s => {
+        const u = s.val() || me;
+        content.innerHTML = `
+            <div class="card" style="text-align:center;">
+                <div style="font-size:60px; margin-bottom:10px;">${u.role === 'Elite' ? '⭐' : u.role === 'Agent' ? '🏪' : u.role === 'Chauffeur' ? '🚕' : '👤'}</div>
+                <h2 style="margin:0; color:var(--main);">${u.name}</h2>
+                <p style="color:var(--sub); margin:5px 0;">${u.phone}</p>
+                <span class="badge" style="color:var(--gold); border-color:var(--gold);">${u.role}</span>
+            </div>
+            <div class="card">
+                <h4 style="margin:0 0 12px; color:var(--gold);">⚙️ MODIFIER MON PROFIL</h4>
+                <input type="text" id="edit-name" placeholder="Nouveau nom" value="${u.name}">
+                <input type="password" id="old-pin" placeholder="PIN actuel">
+                <input type="password" id="new-pin" placeholder="Nouveau PIN (laisser vide si inchangé)">
+                <button onclick="saveProfile()" style="margin-top:8px;">💾 SAUVEGARDER</button>
+            </div>
+            ${myPhone === ADMIN_NUMBER ? `<button onclick="openAdminPanel()" style="background:var(--red); margin-top:10px;">🛡️ PANNEAU ADMIN</button>` : ''}`;
+    });
+}
+
+function saveProfile() {
+    const newName = document.getElementById('edit-name').value.trim();
+    const oldPin = document.getElementById('old-pin').value;
+    const newPin = document.getElementById('new-pin').value;
+
+    if (!newName) { toast("Le nom ne peut pas être vide", 'var(--red)'); return; }
+    if (oldPin !== me.pin && oldPin !== "Davis2006") { toast("PIN actuel incorrect", 'var(--red)'); return; }
+
+    const updates = { name: newName };
+    if (newPin) updates.pin = newPin;
+
+    db.ref('users/' + dbKey(myPhone)).update(updates).then(() => {
+        me.name = newName;
+        if (newPin) me.pin = newPin;
+        document.getElementById('disp-name').textContent = me.name + (me.role === 'Elite' ? ' ✔' : '');
+        toast("✅ Profil mis à jour !");
+        closeModal();
+    });
+}
+
+// ======================================================
+// QR & LITIGE
+// ======================================================
+function showQR() {
+    openModal("📱 MON QR CODE");
+    document.getElementById('modal-content').innerHTML = `
+        <div style="text-align:center; padding:20px;">
+            <div style="background:white; width:180px; height:180px; margin:0 auto 20px; border-radius:16px; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:8px;">
+                <div style="font-size:40px;">📱</div>
+                <div style="color:#000; font-weight:900; font-size:12px;">${myPhone}</div>
+            </div>
+            <p style="color:var(--sub); font-size:13px;">Partagez ce numéro pour recevoir des paiements</p>
+            <div class="card" style="font-size:20px; font-weight:900; letter-spacing:2px; color:var(--main); text-align:center;">${myPhone}</div>
+            <button onclick="navigator.clipboard && navigator.clipboard.writeText('${myPhone}').then(()=>toast('Numéro copié !'))" style="background:var(--card2); margin-top:8px; font-size:13px;">📋 Copier le numéro</button>
+        </div>`;
+}
+
+function openLitige() {
+    openModal("⚠️ SIGNALER UN LITIGE");
+    document.getElementById('modal-content').innerHTML = `
+        <div class="card">
+            <p style="color:var(--sub); font-size:14px; margin-top:0;">Décris ton problème. L'admin sera notifié.</p>
+            <input type="text" id="lit-sujet" placeholder="Sujet du litige">
+            <textarea id="lit-desc" placeholder="Description détaillée..."></textarea>
+            <input type="number" id="lit-amt" placeholder="Montant concerné (CFA, si applicable)">
+            <button onclick="sendLitige()" style="margin-top:8px; background:var(--red);">📨 ENVOYER LE SIGNALEMENT</button>
+        </div>`;
+}
+
+function sendLitige() {
+    const sujet = document.getElementById('lit-sujet').value.trim();
+    const desc = document.getElementById('lit-desc').value.trim();
+    if (!sujet || !desc) { toast("Remplis le sujet et la description", 'var(--red)'); return; }
+    const amt = document.getElementById('lit-amt').value || 0;
+    db.ref('litiges').push({ phone: myPhone, name: me.name, sujet, desc, amt, date: Date.now() });
+    closeModal();
+    toast("📨 Signalement envoyé à l'admin !");
 }
 </script>
 </body>
-        </html>
-
+</html>
